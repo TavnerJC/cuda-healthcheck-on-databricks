@@ -1,0 +1,33 @@
+You are helping build a CUDA Healthcheck Tool for Databricks.
+
+## Project Goal
+Detect CUDA version incompatibilities between developer environments and Databricks clusters before they cause production failures.
+
+## Technology Stack
+- Language: Python 3.10+
+- Execution Context: Databricks clusters (GPU-enabled)
+- Integration: Databricks Connect (local dev)
+- Web UI: Flask/FastAPI for Databricks web interface
+- CI/CD: GitHub Actions + CodeRabbit for code reviews
+- Infrastructure: Databricks Unity Catalog, custom containers
+
+## Key Patterns
+- All CUDA detection uses: nvidia-smi, nvcc, torch.cuda, tensorflow checks
+- All code must work in Databricks clusters (no local storage APIs)
+- Database: Maintain CUDA breaking change logs in Delta tables
+- Dependency management: Use Renovate for automated version tracking
+
+## Code Organization
+- src/cuda_detector/ - Core detection logic
+- src/healthcheck/ - Health check orchestration
+- src/databricks_api/ - Databricks integration
+- tests/ - Unit tests using pytest
+- .github/workflows/ - GitHub Actions for CI/CD
+- docs/ - Migration guides, deprecation logs
+
+## Development Workflow
+1. Develop locally with Databricks Connect to test on actual clusters
+2. Use CodeRabbit for automated PR reviews
+3. GitHub Actions runs compatibility tests on CUDA 12.4, 12.6, 13.0
+4. All code must be tested against 3+ CUDA versions
+
