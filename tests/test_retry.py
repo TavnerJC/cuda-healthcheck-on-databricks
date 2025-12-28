@@ -5,6 +5,8 @@ Tests can be run locally without any dependencies on Databricks or CUDA.
 """
 
 import time
+from unittest.mock import Mock
+
 import pytest
 
 from src.utils.retry import retry_on_failure, retry_with_timeout

@@ -338,8 +338,7 @@ class DatabricksConnector:
             if not validate_table_path(table_path):
                 raise DeltaTableError(f"Invalid table path format: {table_path}")
 
-            # nosec B608 - table_path is validated above
-            query = f"SELECT * FROM {table_path}"
+            query = f"SELECT * FROM {table_path}"  # nosec B608 - table_path is validated above
             if limit:
                 # Ensure limit is an integer to prevent injection
                 query += f" LIMIT {int(limit)}"
