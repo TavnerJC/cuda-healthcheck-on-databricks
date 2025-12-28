@@ -61,7 +61,7 @@ jobs:
         pip install black flake8 mypy
     
     - name: Run black
-      run: black --check src/ tests/
+      run: black --check src/ tests/ --line-length=100
     
     - name: Run flake8
       run: flake8 src/ tests/ --max-line-length=100
