@@ -4,7 +4,6 @@ import pytest
 from src.data.breaking_changes import (
     BreakingChange,
     BreakingChangesDatabase,
-    Severity,
     score_compatibility,
     get_breaking_changes,
 )
@@ -59,9 +58,7 @@ class TestBreakingChangesDatabase:
 
     def test_score_compatibility_compute_capability(self):
         """Test scoring with compute capability checks."""
-        libraries = [
-            {"name": "tensorflow", "version": "2.15.0", "cuda_version": "12.1"}
-        ]
+        libraries = [{"name": "tensorflow", "version": "2.15.0", "cuda_version": "12.1"}]
 
         score = self.db.score_compatibility(libraries, "12.1", compute_capability="9.0")
 
@@ -120,4 +117,3 @@ def test_get_breaking_changes_filtered():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

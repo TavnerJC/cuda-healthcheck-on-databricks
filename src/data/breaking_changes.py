@@ -9,7 +9,6 @@ import json
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
-from pathlib import Path
 
 
 class Severity(Enum):
@@ -71,7 +70,8 @@ class BreakingChangesDatabase:
                 ],
                 migration_path=(
                     "1. Wait for official PyTorch CUDA 13.x builds\n"
-                    "2. Install: pip install torch --index-url https://download.pytorch.org/whl/cu130\n"
+                    "2. Install: pip install torch "
+                    "--index-url https://download.pytorch.org/whl/cu130\n"
                     "3. Verify with: python -c 'import torch; print(torch.version.cuda)'"
                 ),
                 references=[
@@ -120,7 +120,8 @@ class BreakingChangesDatabase:
                 migration_path=(
                     "1. Upgrade to TensorFlow 2.18 or later\n"
                     "2. pip install tensorflow[and-cuda]==2.18.0\n"
-                    "3. Verify GPU detection: python -c 'import tensorflow as tf; print(tf.config.list_physical_devices(\"GPU\"))'"
+                    "3. Verify GPU detection: python -c 'import tensorflow as tf; "
+                    'print(tf.config.list_physical_devices("GPU"))\''
                 ),
                 references=[
                     "https://www.tensorflow.org/install/source#gpu",
@@ -167,7 +168,8 @@ class BreakingChangesDatabase:
                 ],
                 migration_path=(
                     "1. Upgrade RAPIDS to 24.12+\n"
-                    "2. conda install -c rapidsai -c conda-forge -c nvidia cudf=24.12 python=3.11 cuda-version=13.0\n"
+                    "2. conda install -c rapidsai -c conda-forge -c nvidia "
+                    "cudf=24.12 python=3.11 cuda-version=13.0\n"
                     "3. Or use pip: pip install cudf-cu13==24.12.*"
                 ),
                 references=[
@@ -217,7 +219,8 @@ class BreakingChangesDatabase:
                     "4. Verify driver: nvidia-smi"
                 ),
                 references=[
-                    "https://docs.omniverse.nvidia.com/isaacsim/latest/installation/requirements.html",
+                    "https://docs.omniverse.nvidia.com/isaacsim/latest/"
+                    "installation/requirements.html",
                     "https://catalog.ngc.nvidia.com/orgs/nvidia/containers/isaac-sim",
                 ],
             ),
@@ -237,12 +240,14 @@ class BreakingChangesDatabase:
                 migration_path=(
                     "1. Update NVIDIA drivers to 550.54.15+\n"
                     "2. Install CUDA 12.4+\n"
-                    "3. Use BioNeMo container: docker pull nvcr.io/nvidia/clara/bionemo-framework:2.0\n"
+                    "3. Use BioNeMo container: docker pull "
+                    "nvcr.io/nvidia/clara/bionemo-framework:2.0\n"
                     "4. Check compatibility: nvidia-smi"
                 ),
                 references=[
                     "https://docs.nvidia.com/bionemo/",
-                    "https://catalog.ngc.nvidia.com/orgs/nvidia/teams/clara/containers/bionemo-framework",
+                    "https://catalog.ngc.nvidia.com/orgs/nvidia/teams/clara/"
+                    "containers/bionemo-framework",
                 ],
             ),
             # Modulus (Physics ML)
@@ -305,8 +310,9 @@ class BreakingChangesDatabase:
                 cuda_version_from="12.x",
                 cuda_version_to="13.0",
                 description=(
-                    "CUDA 13.x deprecates support for compute capability 5.0 (Maxwell architecture: "
-                    "GTX 900 series, Quadro M series). These GPUs may not work correctly."
+                    "CUDA 13.x deprecates support for compute capability 5.0 "
+                    "(Maxwell architecture: GTX 900 series, Quadro M series). "
+                    "These GPUs may not work correctly."
                 ),
                 affected_apis=["All CUDA operations on Maxwell GPUs"],
                 migration_path=(
@@ -395,13 +401,18 @@ class BreakingChangesDatabase:
         Returns:
             Dictionary with compatibility score and applicable breaking changes.
         """
-        applicable_changes = {"CRITICAL": [], "WARNING": [], "INFO": []}
+        applicable_changes: Dict[str, List[Dict[str, Any]]] = {
+            "CRITICAL": [],
+            "WARNING": [],
+            "INFO": [],
+        }
 
         # Check each detected library
         for lib_info in detected_libraries:
             lib_name = lib_info.get("name", "").lower()
-            lib_version = lib_info.get("version", "")
-            lib_cuda = lib_info.get("cuda_version")
+            # lib_version and lib_cuda are reserved for future compatibility checks
+            # lib_version = lib_info.get("version", "")
+            # lib_cuda = lib_info.get("cuda_version")
 
             if lib_name == "not installed":
                 continue
@@ -419,17 +430,14 @@ class BreakingChangesDatabase:
                     if change.applies_to_compute_capabilities:
                         if (
                             compute_capability
-                            and compute_capability
-                            in change.applies_to_compute_capabilities
+                            and compute_capability in change.applies_to_compute_capabilities
                         ):
                             applicable_changes[change.severity].append(asdict(change))
                     else:
                         applicable_changes[change.severity].append(asdict(change))
 
         # Check CUDA-level changes (not library specific)
-        cuda_changes = [
-            c for c in self.breaking_changes if c.affected_library == "cuda"
-        ]
+        cuda_changes = [c for c in self.breaking_changes if c.affected_library == "cuda"]
         for change in cuda_changes:
             if change.applies_to_compute_capabilities:
                 if (
@@ -444,9 +452,7 @@ class BreakingChangesDatabase:
         info_count = len(applicable_changes["INFO"])
 
         # Score: 100 - (criticals * 30) - (warnings * 10) - (info * 2)
-        score = max(
-            0, 100 - (critical_count * 30) - (warning_count * 10) - (info_count * 2)
-        )
+        score = max(0, 100 - (critical_count * 30) - (warning_count * 10) - (info_count * 2))
 
         return {
             "compatibility_score": score,
@@ -470,15 +476,16 @@ class BreakingChangesDatabase:
             Recommendation string.
         """
         if critical_count > 0:
-            return "CRITICAL: Environment has breaking changes that will cause failures. Immediate action required."
+            return (
+                "CRITICAL: Environment has breaking changes that will cause failures. "
+                "Immediate action required."
+            )
         elif score >= 90:
             return "GOOD: Environment is highly compatible. Minor issues may exist."
         elif score >= 70:
             return "ACCEPTABLE: Environment is mostly compatible. Review warnings."
         elif score >= 50:
-            return (
-                "CAUTION: Environment has compatibility concerns. Testing recommended."
-            )
+            return "CAUTION: Environment has compatibility concerns. Testing recommended."
         else:
             return "HIGH RISK: Environment has significant compatibility issues. Migration needed."
 
@@ -571,4 +578,3 @@ if __name__ == "__main__":
     print("Exporting to breaking_changes.json...")
     db.export_to_json("breaking_changes.json")
     print("Done!")
-

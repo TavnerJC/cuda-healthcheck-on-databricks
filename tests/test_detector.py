@@ -127,7 +127,8 @@ def test_detect_cuda_environment():
         mock_instance = Mock()
         mock_detector.return_value = mock_instance
 
-        result = detect_cuda_environment()
+        # Call detect_cuda_environment
+        detect_cuda_environment()
 
         mock_instance.detect_environment.assert_called_once()
         mock_instance.to_dict.assert_called_once()
@@ -135,4 +136,3 @@ def test_detect_cuda_environment():
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

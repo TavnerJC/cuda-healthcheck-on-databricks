@@ -44,9 +44,7 @@ class ClusterHealthcheck:
 class ClusterScanner:
     """Scans Databricks clusters for CUDA compatibility issues."""
 
-    def __init__(
-        self, workspace_url: Optional[str] = None, token: Optional[str] = None
-    ):
+    def __init__(self, workspace_url: Optional[str] = None, token: Optional[str] = None):
         """
         Initialize the cluster scanner.
 
@@ -127,9 +125,7 @@ except Exception as e:
 
         # Create notebook in workspace
         self.client.workspace.mkdirs(notebook_path)
-        self.client.workspace.upload(
-            notebook_path, notebook_content.encode(), format="SOURCE"
-        )
+        self.client.workspace.upload(notebook_path, notebook_content.encode(), format="SOURCE")
 
         return notebook_path
 
@@ -290,8 +286,8 @@ except Exception as e:
             table: Table name
         """
         try:
-            # Convert results to dictionaries
-            data = [asdict(result) for result in results]
+            # Convert results to dictionaries for future use
+            # data = [asdict(result) for result in results]
 
             # Create SQL statements to insert data
             # Note: This is a simplified version. In production, use Spark DataFrame API
@@ -357,12 +353,10 @@ except Exception as e:
         failed_scans = sum(1 for r in results if r.status == "error")
 
         # Count CUDA versions
-        cuda_versions = {}
+        cuda_versions: Dict[str, int] = {}
         for result in results:
             if result.cuda_version:
-                cuda_versions[result.cuda_version] = (
-                    cuda_versions.get(result.cuda_version, 0) + 1
-                )
+                cuda_versions[result.cuda_version] = cuda_versions.get(result.cuda_version, 0) + 1
 
         # Count breaking changes
         total_breaking_changes = sum(len(r.breaking_changes) for r in results)
@@ -425,4 +419,3 @@ if __name__ == "__main__":
     else:
         print("Usage: python cluster_scanner.py --test")
         print("Set DATABRICKS_HOST and DATABRICKS_TOKEN environment variables first.")
-

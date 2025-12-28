@@ -5,7 +5,7 @@ Coordinates CUDA detection, breaking change analysis, and reporting.
 """
 
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from datetime import datetime
 
 from ..cuda_detector.detector import CUDADetector
@@ -39,8 +39,7 @@ def run_complete_healthcheck() -> Dict[str, Any]:
     # Score compatibility
     compatibility = db.score_compatibility(
         detected_libraries=[
-            detector.to_dict(environment)["libraries"][i]
-            for i in range(len(environment.libraries))
+            detector.to_dict(environment)["libraries"][i] for i in range(len(environment.libraries))
         ],
         cuda_version=environment.cuda_driver_version or "Unknown",
         compute_capability=compute_capability,
@@ -87,4 +86,3 @@ if __name__ == "__main__":
     # Run healthcheck and print results
     results = run_complete_healthcheck()
     print(json.dumps(results, indent=2))
-

@@ -13,4 +13,3 @@ __all__ = [
     "score_compatibility",
     "get_breaking_changes",
 ]
-

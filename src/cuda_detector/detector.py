@@ -8,7 +8,6 @@ on Databricks GPU-enabled clusters.
 import json
 import subprocess
 import re
-import os
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from pathlib import Path
@@ -84,14 +83,6 @@ class CUDADetector:
 
             if result.returncode != 0:
                 return {"error": "nvidia-smi failed", "details": result.stderr}
-
-            # Get CUDA version from nvidia-smi
-            cuda_result = subprocess.run(
-                ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
 
             # Parse nvidia-smi version output for CUDA version
             version_result = subprocess.run(
@@ -221,9 +212,7 @@ class CUDADetector:
             if cuda_version:
                 cuda_major = int(cuda_version.split(".")[0])
                 if cuda_major >= 13:
-                    warnings.append(
-                        "PyTorch may need rebuild for CUDA 13.x compatibility"
-                    )
+                    warnings.append("PyTorch may need rebuild for CUDA 13.x compatibility")
 
             return LibraryInfo(
                 name="pytorch",
@@ -356,7 +345,7 @@ class CUDADetector:
         libraries = self.detect_all_libraries()
 
         # Identify breaking changes (to be implemented with breaking_changes module)
-        breaking_changes = []
+        breaking_changes: List[Dict[str, Any]] = []
 
         return CUDAEnvironment(
             cuda_runtime_version=cuda_runtime,
@@ -419,4 +408,3 @@ if __name__ == "__main__":
     detector = CUDADetector()
     environment = detector.detect_environment()
     print(detector.to_json(environment))
-

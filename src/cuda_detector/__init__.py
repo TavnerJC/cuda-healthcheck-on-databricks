@@ -3,4 +3,3 @@
 from .detector import CUDADetector, detect_cuda_environment
 
 __all__ = ["CUDADetector", "detect_cuda_environment"]
-
