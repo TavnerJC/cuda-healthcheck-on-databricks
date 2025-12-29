@@ -154,8 +154,9 @@ print("=" * 80)
 print("🔍 DETAILED COMPATIBILITY ANALYSIS")
 print("=" * 80)
 
-# Get all breaking changes for CUDA 13.0
-changes_13 = db.get_changes_by_cuda_version("13.0")
+# Get all breaking changes that involve CUDA 13.0
+all_changes = db.get_all_changes()
+changes_13 = [c for c in all_changes if "13.0" in c.cuda_version_to]
 
 if changes_13:
     print(f"\n📋 Found {len(changes_13)} breaking change(s) for CUDA 13.0:")
