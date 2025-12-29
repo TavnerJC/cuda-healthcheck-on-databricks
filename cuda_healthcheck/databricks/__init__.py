@@ -34,7 +34,7 @@ Example:
 
     if is_serverless_environment():
         print("Running on Serverless GPU Compute")
-    
+
     gpu_info = detect_gpu_auto()  # Automatically uses correct method
     print(f"Found {gpu_info.get('gpu_count', 0)} GPUs")
     ```
