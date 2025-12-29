@@ -270,7 +270,24 @@ def detect_gpu_auto() -> Dict[str, Any]:
     and uses the correct GPU detection method.
 
     Returns:
-        Dictionary with GPU information and detection metadata
+        Dictionary with GPU information and detection metadata.
+        
+        Standard keys (present in all return dictionaries):
+        - success (bool): True if detection succeeded
+        - method (str): 'direct' or 'distributed'
+        - environment (str): 'serverless' or 'classic'
+        - gpu_count (int): Number of GPUs detected
+        - error (str or None): Error message if detection failed
+        
+        Additional keys for serverless (direct detection):
+        - hostname (str): Current host name
+        - gpus (list): List of GPU dictionaries with detailed info
+        
+        Additional keys for classic (distributed detection):
+        - total_executors (int): Number of Spark executors
+        - worker_node_count (int): Number of unique worker nodes
+        - physical_gpu_count (int): Deduplicated GPU count
+        - worker_nodes (dict): Mapping of hostnames to GPU lists
     """
     serverless = is_serverless_environment()
 
@@ -279,8 +296,14 @@ def detect_gpu_auto() -> Dict[str, Any]:
     if serverless:
         result = detect_gpu_direct()
         result["environment"] = "serverless"
+        # Ensure gpu_count is present (already is, but for consistency)
+        if "gpu_count" not in result:
+            result["gpu_count"] = len(result.get("gpus", []))
     else:
         result = detect_gpu_distributed()
         result["environment"] = "classic"
+        # Ensure gpu_count is present (use physical_gpu_count for classic)
+        if "gpu_count" not in result:
+            result["gpu_count"] = result.get("physical_gpu_count", 0)
 
     return result
