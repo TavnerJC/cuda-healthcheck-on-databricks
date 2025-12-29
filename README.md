@@ -94,6 +94,8 @@ CUDA_HEALTHCHECK_LOG_LEVEL=DEBUG
 
 ### Databricks (Recommended)
 
+**🚀 First time? See the [Visual Quick Start Guide](docs/DATABRICKS_QUICK_START.md) with step-by-step screenshots!**
+
 **Use the provided notebook** - it's production-ready and tested!
 
 ```python
