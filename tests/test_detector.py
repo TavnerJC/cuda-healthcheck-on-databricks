@@ -1,11 +1,16 @@
 """Unit tests for CUDA detector."""
 
+import os
 import shutil
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
 from src.cuda_detector.detector import CUDADetector, detect_cuda_environment
+
+# Check if nvidia-smi is available
+HAS_NVIDIA_SMI = shutil.which("nvidia-smi") is not None
+SKIP_GPU_TESTS = os.getenv("CI") == "true" or not HAS_NVIDIA_SMI
 
 
 class TestCUDADetector:
@@ -18,7 +23,7 @@ class TestCUDADetector:
     @patch("subprocess.run")
     def test_detect_nvidia_smi_success(self, mock_run):
         """Test successful nvidia-smi detection."""
-        # Mock nvidia-smi output
+        # Mock nvidia-smi output (test runs via mock even without GPU)
         mock_run.return_value = Mock(
             returncode=0,
             stdout="535.104.05, Tesla V100-SXM2-16GB, 16384, 7.0, 0\n",
