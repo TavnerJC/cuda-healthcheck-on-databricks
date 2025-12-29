@@ -93,8 +93,21 @@ print("🔧 CUDA ENVIRONMENT")
 print("=" * 80)
 print(f"CUDA Runtime: {env.cuda_runtime_version}")
 print(f"CUDA Driver: {env.cuda_driver_version}")
-print(f"PyTorch: {env.pytorch_version if env.pytorch_available else 'Not installed'}")
-print(f"PyTorch CUDA: {env.pytorch_cuda_version if env.pytorch_available else 'N/A'}")
+print(f"NVCC Version: {env.nvcc_version}")
+
+# Extract PyTorch info from libraries list
+pytorch_lib = None
+for lib in env.libraries:
+    if lib.name.lower() == "pytorch":
+        pytorch_lib = lib
+        break
+
+if pytorch_lib:
+    print(f"PyTorch: {pytorch_lib.version}")
+    print(f"PyTorch CUDA: {pytorch_lib.cuda_version}")
+    print(f"Compatible: {pytorch_lib.is_compatible}")
+else:
+    print("PyTorch: Not installed")
 
 # COMMAND ----------
 # MAGIC %md
@@ -104,11 +117,16 @@ print(f"PyTorch CUDA: {env.pytorch_cuda_version if env.pytorch_available else 'N
 # Check CuOPT compatibility
 db = BreakingChangesDatabase()
 
+# Extract PyTorch version for compatibility check
+pytorch_lib = next((lib for lib in env.libraries if lib.name.lower() == "pytorch"), None)
+pytorch_version = pytorch_lib.version if pytorch_lib else "unknown"
+pytorch_cuda_version = pytorch_lib.cuda_version if pytorch_lib else env.cuda_runtime_version
+
 # Test upgrade path to CUDA 13.0
 score = db.score_compatibility(
     detected_libraries=[
-        {"name": "pytorch", "version": env.pytorch_version or "unknown", 
-         "cuda_version": env.pytorch_cuda_version or env.cuda_runtime_version}
+        {"name": "pytorch", "version": pytorch_version, 
+         "cuda_version": pytorch_cuda_version}
     ],
     cuda_version="13.0"
 )
@@ -127,14 +145,17 @@ print(f"Status: {score['recommendation']}")
 
 # COMMAND ----------
 # Create environment snapshot for benchmark metadata
+pytorch_lib = next((lib for lib in env.libraries if lib.name.lower() == "pytorch"), None)
+
 environment_snapshot = {
     "timestamp": datetime.utcnow().isoformat(),
     "gpu_info": gpu_info,
     "cuda_environment": {
         "runtime": env.cuda_runtime_version,
         "driver": env.cuda_driver_version,
-        "pytorch": env.pytorch_version,
-        "pytorch_cuda": env.pytorch_cuda_version,
+        "nvcc": env.nvcc_version,
+        "pytorch": pytorch_lib.version if pytorch_lib else None,
+        "pytorch_cuda": pytorch_lib.cuda_version if pytorch_lib else None,
     },
     "compatibility_score": score['compatibility_score'],
     "gpu_architecture": gpu_info['gpus'][0]['name'] if gpu_info['gpu_count'] > 0 else "unknown",
