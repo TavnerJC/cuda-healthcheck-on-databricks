@@ -220,9 +220,43 @@ jobs:
 
     - name: Check notebook syntax
       run: |
-        python -m py_compile notebooks/setup.py
-        python -m py_compile notebooks/healthcheck_runner.py
-        echo "✓ Notebook syntax valid"
+        # Check that notebooks exist and are readable
+        test -f notebooks/setup.py || (echo "❌ setup.py not found" && exit 1)
+        test -f notebooks/healthcheck_runner.py || (echo "❌ healthcheck_runner.py not found" && exit 1)
+        
+        # Validate Python syntax (excluding Databricks magic commands)
+        python -c "
+        import ast
+        import re
+        
+        def validate_notebook(filepath):
+            with open(filepath, 'r') as f:
+                content = f.read()
+            
+            # Remove Databricks magic commands for validation
+            lines = []
+            for line in content.split('\n'):
+                # Skip magic commands but keep regular Python
+                if not line.strip().startswith('%') and not line.strip().startswith('!'):
+                    lines.append(line)
+            
+            clean_content = '\n'.join(lines)
+            
+            try:
+                ast.parse(clean_content)
+                return True
+            except SyntaxError as e:
+                print(f'Syntax error in {filepath}: {e}')
+                return False
+        
+        setup_valid = validate_notebook('notebooks/setup.py')
+        runner_valid = validate_notebook('notebooks/healthcheck_runner.py')
+        
+        if setup_valid and runner_valid:
+            print('✓ Notebook syntax valid')
+        else:
+            exit(1)
+        "
 
   summary:
     name: Test Summary

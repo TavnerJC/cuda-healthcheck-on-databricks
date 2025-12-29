@@ -1,5 +1,6 @@
 """Unit tests for CUDA detector."""
 
+import shutil
 from unittest.mock import Mock, mock_open, patch
 
 import pytest
