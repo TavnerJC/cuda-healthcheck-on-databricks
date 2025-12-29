@@ -11,9 +11,6 @@ jobs:
   test:
     name: Test Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +25,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
-        cache-dependency-path: 'cuda-healthcheck/requirements.txt'
 
     - name: Install dependencies
       run: |
@@ -47,9 +43,6 @@ jobs:
   test-coverage:
     name: Test with Coverage
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
     
     steps:
     - name: Checkout code
@@ -60,7 +53,6 @@ jobs:
       with:
         python-version: "3.11"
         cache: 'pip'
-        cache-dependency-path: 'cuda-healthcheck/requirements.txt'
 
     - name: Install dependencies
       run: |
@@ -75,7 +67,7 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
-        file: ./cuda-healthcheck/coverage.xml
+        file: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
@@ -90,9 +82,6 @@ jobs:
   test-modules:
     name: Test Individual Modules
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
 
     steps:
     - name: Checkout code
@@ -103,7 +92,6 @@ jobs:
       with:
         python-version: "3.11"
         cache: 'pip'
-        cache-dependency-path: 'cuda-healthcheck/requirements.txt'
 
     - name: Install dependencies
       run: |
@@ -130,9 +118,6 @@ jobs:
   test-compatibility:
     name: Test Compatibility Scenarios
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
 
     steps:
     - name: Checkout code
@@ -143,7 +128,6 @@ jobs:
       with:
         python-version: "3.11"
         cache: 'pip'
-        cache-dependency-path: 'cuda-healthcheck/requirements.txt'
 
     - name: Install dependencies
       run: |
@@ -184,9 +168,6 @@ jobs:
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
 
     steps:
     - name: Checkout code
@@ -197,7 +178,6 @@ jobs:
       with:
         python-version: "3.11"
         cache: 'pip'
-        cache-dependency-path: 'cuda-healthcheck/requirements.txt'
 
     - name: Install dependencies
       run: |
@@ -228,9 +208,6 @@ jobs:
   test-notebooks:
     name: Validate Notebooks
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: cuda-healthcheck
 
     steps:
     - name: Checkout code
