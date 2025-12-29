@@ -38,7 +38,7 @@ jobs:
 
     - name: Test import
       run: |
-        python -c "from src import CUDADetector, HealthcheckOrchestrator; print('✓ Imports successful')"
+        python -c "from cuda_healthcheck import CUDADetector, HealthcheckOrchestrator; print('✓ Imports successful')"
 
   test-coverage:
     name: Test with Coverage
@@ -62,7 +62,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        pytest tests/ --cov=src --cov-report=xml --cov-report=term-missing
+        pytest tests/ --cov=cuda_healthcheck --cov-report=xml --cov-report=term-missing
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
@@ -77,7 +77,7 @@ jobs:
       run: |
         echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        pytest tests/ --cov=src --cov-report=term-missing | tail -n 20 >> $GITHUB_STEP_SUMMARY
+        pytest tests/ --cov=cuda_healthcheck --cov-report=term-missing | tail -n 20 >> $GITHUB_STEP_SUMMARY
 
   test-modules:
     name: Test Individual Modules
@@ -138,7 +138,7 @@ jobs:
     - name: Test CUDA version compatibility
       run: |
         python -c "
-        from src import HealthcheckOrchestrator
+        from cuda_healthcheck import HealthcheckOrchestrator
         orch = HealthcheckOrchestrator()
         
         # Test various version transitions
@@ -154,7 +154,7 @@ jobs:
     - name: Test breaking changes detection
       run: |
         python -c "
-        from src.data import get_breaking_changes
+        from cuda_healthcheck.data import get_breaking_changes
         
         pytorch_changes = get_breaking_changes('pytorch')
         assert len(pytorch_changes) > 0
@@ -187,8 +187,8 @@ jobs:
     - name: Test complete workflow
       run: |
         python -c "
-        from src import run_complete_healthcheck
-        from src.data import BreakingChangesDatabase
+        from cuda_healthcheck import run_complete_healthcheck
+        from cuda_healthcheck.data import BreakingChangesDatabase
         
         # Test complete healthcheck (will use mocks for CUDA)
         try:
