@@ -113,6 +113,61 @@ for change in changes:
 | 100K node VRP | +3% | +5% | **+10%** |
 | 1M node VRP | +5% | +8% | **+15%** |
 
+### GPU Selection Guide by Problem Size
+
+**Consider your job size when deciding between A10 and H100.** A smaller project may only require an A10, while larger datasets with more variables justify upgrading to H100.
+
+| Problem Size | Data Points | Variables | Recommended GPU | Reasoning |
+|--------------|-------------|-----------|-----------------|-----------|
+| **Small** | < 500 stops | 2-5 vehicles, 2-3 constraints | **A10** | Sufficient memory, cost-effective |
+| **Medium** | 500-5,000 stops | 5-20 vehicles, 5-10 constraints | **A10 or L40S** | A10 works, L40S faster |
+| **Large** | 5,000-20,000 stops | 20-50 vehicles, 10-20 constraints | **L40S** | Memory needed, performance critical |
+| **Very Large** | 20,000-100,000 stops | 50-200 vehicles, 20-50 constraints | **H100** | Maximum memory, 3x faster solve times |
+| **Enterprise** | > 100,000 stops | 200+ vehicles, 50+ constraints | **H100** | Only option for problems this scale |
+
+**Example Use Cases:**
+
+**Scenario 1: Local Delivery Service (Small)**
+- **Data:** 250 delivery stops per day
+- **Variables:** 3 delivery vehicles, 2 constraints (time windows, capacity)
+- **Recommendation:** A10 (24GB memory sufficient)
+- **Expected Solve Time:** 5-10 minutes
+
+**Scenario 2: Regional Distribution (Medium)**
+- **Data:** 2,500 delivery locations across multiple cities
+- **Variables:** 15 vehicles, 8 constraints (time windows, vehicle capacity, driver shifts, priority deliveries)
+- **Recommendation:** A10 or L40S (A10 works, L40S 2x faster)
+- **Expected Solve Time:** A10: 20-30 min, L40S: 10-15 min
+
+**Scenario 3: National Supply Chain (Large)**
+- **Data:** 15,000 delivery points across regions
+- **Variables:** 40 vehicles, 15 constraints (multiple depots, vehicle types, fuel costs, toll roads)
+- **Recommendation:** L40S (48GB memory needed)
+- **Expected Solve Time:** 15-25 minutes
+
+**Scenario 4: Global Logistics (Very Large)**
+- **Data:** 75,000 delivery locations worldwide
+- **Variables:** 150 vehicles, 35 constraints (international regulations, customs, multi-modal transport)
+- **Recommendation:** H100 (80GB memory essential, 3x performance boost)
+- **Expected Solve Time:** 10-15 minutes (vs 30-45 min on L40S)
+
+**Scenario 5: Real-Time Dynamic Routing (Enterprise)**
+- **Data:** 200,000+ locations, real-time updates every 5 minutes
+- **Variables:** 500+ vehicles, 50+ constraints (dynamic traffic, weather, customer preferences)
+- **Recommendation:** H100 (only option for this scale + speed requirement)
+- **Expected Solve Time:** < 5 minutes per iteration
+
+**Memory Estimation Formula:**
+```
+Rough Memory Needed (GB) = (Num_Stops × Num_Vehicles × Num_Constraints) / 1000
+
+Example 1: (500 × 5 × 3) / 1000 = 7.5 GB → A10 ✅
+Example 2: (15,000 × 40 × 15) / 1000 = 9,000 / 1000 = 9 GB → A10 or L40S ✅
+Example 3: (75,000 × 150 × 35) / 1000 = 393,750 / 1000 = 393 GB → Need H100 distributed
+```
+
+**Note:** This is a simplified estimation. Actual memory usage depends on algorithm complexity and data structures.
+
 **Recommendation from Tool:**
 - A10: Stay on 12.6 (marginal benefit)
 - L40S: Stay on 12.6 (moderate benefit, wait for stability)
@@ -143,43 +198,110 @@ if is_serverless_environment():
 
 ---
 
-## 💰 Cost-Benefit Analysis
+## 💰 Problem Size vs GPU Selection
 
-### Using Our Tool to Estimate Costs
+### Using Our Tool to Determine Optimal GPU
 
 ```python
-# Example: Cost analysis for routing problem
-problem_size = 100000  # nodes
-gpu_model = gpu_info['gpus'][0]['name']
+# Example: GPU selection based on problem characteristics
+from cuda_healthcheck import CUDADetector
+from cuda_healthcheck.databricks import detect_gpu_auto
 
-# Estimated solve times (from benchmarks)
-solve_times = {
-    "A10": {"12.6": 24.5, "13.0": 23.8},
-    "L40S": {"12.6": 11.7, "13.0": 11.0},
-    "H100": {"12.6": 5.8, "13.0": 5.2},
-}
+# Your routing problem parameters
+num_stops = 15000
+num_vehicles = 40
+num_constraints = 15  # time windows, capacity, priority, etc.
 
-# Databricks GPU costs (approximate)
-gpu_costs_per_hour = {
-    "A10": 10,
-    "L40S": 25,
-    "H100": 45,
-}
+# Detect current GPU
+detector = CUDADetector()
+env = detector.detect_environment()
+gpu_info = detect_gpu_auto()
+current_gpu = gpu_info['gpus'][0]['name']
 
-if "A10" in gpu_model:
-    solve_time_126 = solve_times["A10"]["12.6"]
-    solve_time_130 = solve_times["A10"]["13.0"]
-    cost_per_hour = gpu_costs_per_hour["A10"]
-    
-    cost_126 = (solve_time_126 / 60) * cost_per_hour
-    cost_130 = (solve_time_130 / 60) * cost_per_hour
-    savings = cost_126 - cost_130
-    
-    print(f"Cost Analysis for {problem_size:,} node problem:")
-    print(f"  CUDA 12.6: ${cost_126:.2f} ({solve_time_126} min)")
-    print(f"  CUDA 13.0: ${cost_130:.2f} ({solve_time_130} min)")
-    print(f"  Savings: ${savings:.2f} per solve")
-    print(f"  Recommendation: {'Upgrade' if savings > 1 else 'Stay on 12.6'}")
+# Problem complexity score (simplified)
+complexity_score = (num_stops * num_vehicles * num_constraints) / 1000
+estimated_memory_gb = complexity_score / 100
+
+print(f"Problem Characteristics:")
+print(f"  Stops: {num_stops:,}")
+print(f"  Vehicles: {num_vehicles}")
+print(f"  Constraints: {num_constraints}")
+print(f"  Complexity Score: {complexity_score:,.0f}")
+print(f"  Est. Memory Needed: {estimated_memory_gb:.1f} GB")
+
+# GPU recommendations based on problem size
+if num_stops < 500:
+    recommended_gpu = "A10"
+    reasoning = "Small problem - A10 sufficient and cost-effective"
+elif num_stops < 5000:
+    recommended_gpu = "A10 or L40S"
+    reasoning = "Medium problem - A10 works, L40S faster if speed critical"
+elif num_stops < 20000:
+    recommended_gpu = "L40S"
+    reasoning = "Large problem - L40S provides balance of memory and performance"
+else:
+    recommended_gpu = "H100"
+    reasoning = "Very large problem - H100 essential for memory and speed"
+
+print(f"\nRecommended GPU: {recommended_gpu}")
+print(f"Reasoning: {reasoning}")
+print(f"Current GPU: {current_gpu}")
+
+if recommended_gpu != current_gpu:
+    print(f"\n⚠️  Consider upgrading to {recommended_gpu} for this problem size")
+else:
+    print(f"\n✅ Current GPU is suitable for this problem")
+```
+
+**Example Output:**
+```
+Problem Characteristics:
+  Stops: 15,000
+  Vehicles: 40
+  Constraints: 15
+  Complexity Score: 9,000
+  Est. Memory Needed: 9.0 GB
+
+Recommended GPU: L40S
+Reasoning: Large problem - L40S provides balance of memory and performance
+Current GPU: A10G
+
+⚠️  Consider upgrading to L40S for this problem size
+```
+
+---
+
+### Problem Size Decision Tree
+
+```
+IF: num_stops < 500
+    AND: num_vehicles < 10
+    AND: num_constraints < 5
+    → Use A10 (small problem, memory sufficient)
+    Expected Solve Time: 5-10 minutes
+
+ELSE IF: num_stops < 5,000
+    AND: num_vehicles < 20
+    AND: num_constraints < 10
+    → Use A10 (works fine) OR L40S (if speed critical)
+    Expected Solve Time: A10: 20-30 min, L40S: 10-15 min
+
+ELSE IF: num_stops < 20,000
+    AND: num_vehicles < 50
+    AND: num_constraints < 20
+    → Use L40S (memory needed, performance important)
+    Expected Solve Time: 15-25 minutes
+
+ELSE IF: num_stops < 100,000
+    AND: num_vehicles < 200
+    AND: num_constraints < 50
+    → Use H100 (high memory, 3x performance boost)
+    Expected Solve Time: 10-15 minutes
+
+ELSE:
+    → Use H100 (only option for enterprise scale)
+    Expected Solve Time: < 5 minutes per iteration
+    Consider: Distributed solving across multiple GPUs
 ```
 
 ---

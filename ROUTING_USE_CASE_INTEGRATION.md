@@ -237,10 +237,39 @@ After: Validate first, deploy with confidence
 
 ### **For Databricks Users:**
 
-1. **Cost Savings:** Avoid over-provisioning expensive H100s for small problems
+1. **Right-Sized GPU Selection:** Choose A10, L40S, or H100 based on actual problem size (stops, vehicles, constraints)
 2. **Time Savings:** No trial-and-error with different configurations
 3. **Confidence:** Validated environment before expensive deployments
 4. **Planning:** Data-driven upgrade decisions (12.6 vs 13.0)
+
+**GPU Selection Examples:**
+
+| Problem Size | Data Characteristics | Recommended GPU | Reasoning |
+|--------------|---------------------|-----------------|-----------|
+| **Small** | < 500 stops, < 10 vehicles | A10 | Memory sufficient, cost-effective |
+| **Medium** | 500-5K stops, 5-20 vehicles | A10 or L40S | A10 works, L40S if speed critical |
+| **Large** | 5K-20K stops, 20-50 vehicles | L40S | Memory needed, performance matters |
+| **Very Large** | 20K-100K stops, 50-200 vehicles | H100 | Maximum memory, 3x faster |
+| **Enterprise** | > 100K stops, 200+ vehicles | H100 | Only viable option at this scale |
+
+**Real-World Examples:**
+
+```
+Scenario 1: Local Delivery (250 stops, 3 vehicles)
+├─ Before: Deployed H100 (overkill)
+├─ After: Tool recommends A10
+└─ Benefit: Right-sized GPU for job
+
+Scenario 2: Regional Distribution (15K stops, 40 vehicles)
+├─ Before: Used A10 (insufficient memory, slow)
+├─ After: Tool recommends L40S
+└─ Benefit: Faster solve times, adequate memory
+
+Scenario 3: Global Logistics (75K stops, 150 vehicles)
+├─ Before: Tried L40S (memory issues)
+├─ After: Tool recommends H100
+└─ Benefit: Only GPU with sufficient memory
+```
 
 ### **For Our Tool:**
 
