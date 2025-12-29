@@ -376,11 +376,19 @@ See [tests/conftest.py](tests/conftest.py) for available fixtures.
 
 ## 📚 Documentation
 
+### Core Documentation
 - **[ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md)** - Complete configuration guide
-- **[SETUP.md](docs/SETUP.md)** - Detailed setup instructions
+- **[DATABRICKS_DEPLOYMENT.md](docs/DATABRICKS_DEPLOYMENT.md)** - Databricks setup guide
+- **[DATABRICKS_QUICK_START.md](docs/DATABRICKS_QUICK_START.md)** - Visual quick start guide
 - **[BREAKING_CHANGES.md](docs/BREAKING_CHANGES.md)** - CUDA breaking changes database
-- **[MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md)** - Version migration instructions
 - **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Recent enhancements overview
+
+### Use Cases & Examples
+- **[USE_CASE_ROUTING_OPTIMIZATION.md](docs/USE_CASE_ROUTING_OPTIMIZATION.md)** - Databricks Routing + CuOPT optimization
+  - GPU selection (A10 vs L40S vs H100)
+  - CUDA version decision making (12.4 vs 12.6 vs 13.0)
+  - Cost-benefit analysis for large-scale routing problems
+  - Integration with [Databricks Routing Accelerator](https://github.com/databricks-industry-solutions/routing)
 
 ## 🚦 CI/CD
 
