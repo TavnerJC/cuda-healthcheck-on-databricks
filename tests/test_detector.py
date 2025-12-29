@@ -20,9 +20,12 @@ class TestCUDADetector:
         """Set up test fixtures."""
         self.detector = CUDADetector()
 
+    @patch("src.cuda_detector.detector.check_command_available")
     @patch("src.cuda_detector.detector.subprocess.run")
-    def test_detect_nvidia_smi_success(self, mock_run):
+    def test_detect_nvidia_smi_success(self, mock_run, mock_check):
         """Test successful nvidia-smi detection."""
+        # Mock that nvidia-smi command is available
+        mock_check.return_value = True
         # Mock nvidia-smi output - patches subprocess in the detector module
         mock_run.return_value = MagicMock(
             returncode=0,
