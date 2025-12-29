@@ -387,8 +387,15 @@ See [tests/conftest.py](tests/conftest.py) for available fixtures.
 - **[USE_CASE_ROUTING_OPTIMIZATION.md](docs/USE_CASE_ROUTING_OPTIMIZATION.md)** - Databricks Routing + CuOPT optimization
   - GPU selection (A10 vs L40S vs H100)
   - CUDA version decision making (12.4 vs 12.6 vs 13.0)
-  - Cost-benefit analysis for large-scale routing problems
+  - Problem size-based GPU selection guide
   - Integration with [Databricks Routing Accelerator](https://github.com/databricks-industry-solutions/routing)
+
+- **[EXPERIMENT_CUOPT_BENCHMARK.md](docs/EXPERIMENT_CUOPT_BENCHMARK.md)** - 🧪 **Experimental Design: Benchmark CuOPT Performance**
+  - Step-by-step guide to test A10 vs H100
+  - Compare CUDA 12.6 vs 13.0 performance
+  - 3 ready-to-run Databricks notebooks
+  - Automated performance comparison and visualization
+  - Validate with CUDA Healthcheck Tool before each run
 
 ## 🚦 CI/CD
 
