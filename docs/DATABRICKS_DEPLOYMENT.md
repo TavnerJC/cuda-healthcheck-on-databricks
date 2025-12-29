@@ -6,6 +6,11 @@ This guide explains how to deploy and run the CUDA Healthcheck Tool on Databrick
 - ✅ **Classic ML Runtime** clusters (driver + workers)
 - ✅ **Serverless GPU Compute** (single-user, no SparkContext)
 
+**📖 Additional Resources:**
+- 🚀 [Visual Quick Start Guide](DATABRICKS_QUICK_START.md) - Step-by-step with emoji indicators
+- 📊 [Installation Flow Diagrams](INSTALLATION_FLOW_DIAGRAM.md) - ASCII diagrams showing correct process
+- ❌ [Common Mistakes](INSTALLATION_FLOW_DIAGRAM.md#-common-mistakes) - What NOT to do
+
 ---
 
 ## 🎯 Quick Start
