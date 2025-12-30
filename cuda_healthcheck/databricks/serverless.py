@@ -8,7 +8,7 @@ Classic ML Runtime clusters and Serverless GPU Compute.
 import os
 import socket
 import subprocess
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 from ..utils.logging_config import get_logger
 

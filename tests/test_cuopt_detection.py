@@ -5,12 +5,11 @@ Tests the real-world breaking change: CuOPT 25.12+ requires nvJitLink 12.9+
 but Databricks ML Runtime 16.4 provides 12.4.127.
 """
 
-import subprocess
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
-from cuda_healthcheck.cuda_detector.detector import CUDADetector, LibraryInfo
+from cuda_healthcheck.cuda_detector.detector import CUDADetector
 from cuda_healthcheck.data.breaking_changes import BreakingChangesDatabase
 
 
@@ -55,7 +54,7 @@ class TestCuOPTDetection:
     @patch("cuda_healthcheck.cuda_detector.detector.subprocess.run")
     def test_detect_cuopt_nvjitlink_incompatibility(self, mock_run):
         """Test detection of nvJitLink version mismatch (the real-world issue).
-        
+
         This test is skipped because mocking the exact import failure scenario
         is complex. The functionality is validated in real Databricks environments.
         """
@@ -104,8 +103,7 @@ class TestCuOPTBreakingChange:
         all_changes = db.get_all_changes()
 
         cuopt_change = next(
-            (c for c in all_changes if c.id == "cuopt-nvjitlink-databricks-ml-runtime"),
-            None
+            (c for c in all_changes if c.id == "cuopt-nvjitlink-databricks-ml-runtime"), None
         )
 
         assert cuopt_change is not None
@@ -113,7 +111,10 @@ class TestCuOPTBreakingChange:
         assert cuopt_change.affected_library == "cuopt"
         assert cuopt_change.cuda_version_from == "12.4"
         assert cuopt_change.cuda_version_to == "12.9"
-        assert "nvJitLink" in cuopt_change.description or "nvjitlink" in cuopt_change.description.lower()
+        assert (
+            "nvJitLink" in cuopt_change.description
+            or "nvjitlink" in cuopt_change.description.lower()
+        )
         assert "Databricks" in cuopt_change.description
         assert len(cuopt_change.migration_path) > 0
         assert len(cuopt_change.references) > 0
@@ -132,8 +133,7 @@ class TestCuOPTBreakingChange:
         transition_changes = db.get_changes_by_cuda_transition("12.4", "12.9")
 
         cuopt_changes = [
-            c for c in transition_changes
-            if c.id == "cuopt-nvjitlink-databricks-ml-runtime"
+            c for c in transition_changes if c.id == "cuopt-nvjitlink-databricks-ml-runtime"
         ]
 
         assert len(cuopt_changes) >= 1
@@ -144,11 +144,9 @@ class TestCuOPTBreakingChange:
 
         # Score compatibility for CuOPT 25.12 with CUDA 12.4 -> 12.9 upgrade
         score = db.score_compatibility(
-            detected_libraries=[
-                {"name": "cuopt", "version": "25.12.0", "cuda_version": "12.4"}
-            ],
+            detected_libraries=[{"name": "cuopt", "version": "25.12.0", "cuda_version": "12.4"}],
             cuda_version="12.9",
-            compute_capability="8.6"
+            compute_capability="8.6",
         )
 
         # Should have critical issues
@@ -167,7 +165,7 @@ class TestCuOPTMigrationGuidance:
         db = BreakingChangesDatabase()
         cuopt_change = next(
             (c for c in db.get_all_changes() if c.id == "cuopt-nvjitlink-databricks-ml-runtime"),
-            None
+            None,
         )
 
         assert cuopt_change is not None
@@ -178,18 +176,21 @@ class TestCuOPTMigrationGuidance:
         db = BreakingChangesDatabase()
         cuopt_change = next(
             (c for c in db.get_all_changes() if c.id == "cuopt-nvjitlink-databricks-ml-runtime"),
-            None
+            None,
         )
 
         assert cuopt_change is not None
-        assert "or-tools" in cuopt_change.migration_path.lower() or "ortools" in cuopt_change.migration_path.lower()
+        assert (
+            "or-tools" in cuopt_change.migration_path.lower()
+            or "ortools" in cuopt_change.migration_path.lower()
+        )
 
     def test_migration_path_explains_unfixable(self):
         """Test that migration path explains users cannot fix this."""
         db = BreakingChangesDatabase()
         cuopt_change = next(
             (c for c in db.get_all_changes() if c.id == "cuopt-nvjitlink-databricks-ml-runtime"),
-            None
+            None,
         )
 
         assert cuopt_change is not None
@@ -205,12 +206,12 @@ class TestCuOPTIntegration:
         """Test that full environment detection includes CuOPT check."""
         # Mock nvidia-smi
         mock_run.return_value = Mock(
-            returncode=0,
-            stdout="535.161.07, NVIDIA A10G, 23028, 8.6, 0\n",
-            stderr=""
+            returncode=0, stdout="535.161.07, NVIDIA A10G, 23028, 8.6, 0\n", stderr=""
         )
 
-        with patch("cuda_healthcheck.cuda_detector.detector.check_command_available", return_value=True):
+        with patch(
+            "cuda_healthcheck.cuda_detector.detector.check_command_available", return_value=True
+        ):
             with patch("builtins.open", create=True):
                 with patch("builtins.__import__") as mock_import:
                     # Mock all libraries as not installed for simplicity
@@ -226,4 +227,3 @@ class TestCuOPTIntegration:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-
