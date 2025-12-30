@@ -173,8 +173,12 @@ if changes_13:
         
         if change.migration_path:
             print(f"\n✅ Migration Path:")
-            for step in change.migration_path:
-                print(f"  • {step}")
+            # Split by newline since migration_path is stored as a single string
+            steps = change.migration_path.strip().split('\n')
+            for step in steps:
+                step = step.strip()
+                if step:  # Only print non-empty lines
+                    print(f"  {step}")
         
         print(f"\n📚 Code Reference:")
         print(f"  File: cuda_healthcheck/data/breaking_changes.py")
