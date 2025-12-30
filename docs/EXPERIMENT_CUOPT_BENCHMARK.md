@@ -282,7 +282,7 @@ import time
 import json
 import numpy as np
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timezone
 import matplotlib.pyplot as plt
 
 # Import CuOPT (this will fail gracefully if not compatible)
@@ -498,7 +498,7 @@ for test_case in test_cases:
     # Add environment metadata
     result['gpu_architecture'] = environment['gpu_architecture']
     result['cuda_version'] = environment['cuda_environment']['runtime']
-    result['timestamp'] = datetime.utcnow().isoformat()
+    result['timestamp'] = datetime.now(timezone.utc).isoformat()
     
     results.append(result)
     
