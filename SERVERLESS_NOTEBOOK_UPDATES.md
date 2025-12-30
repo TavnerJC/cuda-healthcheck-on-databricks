@@ -129,8 +129,8 @@ if "12.6" in pytorch_info.cuda_version:
 - Variables undefined after restart? → Expected behavior, continue to Step 3+
 
 **Documentation:**
-- Full Guide: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/DATABRICKS_DEPLOYMENT.md
-- Quick Start: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/DATABRICKS_QUICK_START.md
+- Full Guide: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_DEPLOYMENT.md
+- Quick Start: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_QUICK_START.md
 ```
 
 **Why:** Provide real-world validation data and help future users troubleshoot common issues.
@@ -343,4 +343,5 @@ The serverless notebook has been updated with **real-world validation learnings*
 - Time Investment: ~4 hours of validation + documentation
 
 **Result:** World-class documentation for a production-ready CUDA healthcheck tool! 🚀
+
 

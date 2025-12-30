@@ -121,7 +121,7 @@ query = f"SELECT * FROM {table_path}"
 ## 🔗 Monitor Progress
 
 Watch your GitHub Actions here:  
-**https://github.com/TavnerJC/cuda-healthcheck-1.0/actions**
+**https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions**
 
 Expected timeline:
 - **0-1 min**: Workflows start running
@@ -173,5 +173,6 @@ You'll know everything works when:
 4. **Re-run failed jobs** using the GitHub UI "Re-run jobs" button
 
 All local checks pass, so GitHub should pass too! ✨
+
 
 

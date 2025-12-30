@@ -8,7 +8,7 @@ Your push to GitHub was successful, and your CI/CD pipelines are running correct
 
 ## ✅ What You See on GitHub
 
-### Repository: TavnerJC/cuda-healthcheck-1.0
+### Repository: TavnerJC/cuda-healthcheck-on-databricks
 
 **Main Commit**: "Type Safety, Performance & Documentation Enhancements" (bd735fc)
 - ✅ Code Quality workflow: PASSED
@@ -32,7 +32,7 @@ Since all checks passed, you can safely merge these dependency updates:
 
 #### Via GitHub Web UI (Easiest):
 
-1. Go to your repository: https://github.com/TavnerJC/cuda-healthcheck-1.0/pulls
+1. Go to your repository: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/pulls
 2. For each PR (1-5):
    - Click on the PR
    - Review the changes (they're just version bumps in workflow files)
@@ -142,7 +142,7 @@ gh pr merge 5 --auto --merge --delete-branch
 cd "C:\Users\joelc\OneDrive - NVIDIA Corporation\Desktop\Cursor Projects\CUDA Healthcheck Tool on Databricks\CUDA Healthcheck Code Base\cuda-healthcheck"
 
 # Option 1: Use GitHub Web UI (recommended for first time)
-# Go to: https://github.com/TavnerJC/cuda-healthcheck-1.0/pulls
+# Go to: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/pulls
 # Click "Merge" on each PR
 
 # Option 2: Use GitHub CLI
@@ -269,5 +269,6 @@ Your repository is:
 - ✅ 5 safe dependency updates ready to merge
 
 **Next step**: Merge those PRs and keep building! 🚀
+
 
 

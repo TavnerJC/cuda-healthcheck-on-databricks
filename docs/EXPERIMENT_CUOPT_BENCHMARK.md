@@ -8,7 +8,7 @@ Compare performance of [Databricks GPU Route Optimization](https://github.com/da
 - **Problem Sizes:** Small (500 stops) to Large (50K stops)
 
 **Tools:**
-- [CUDA Healthcheck Tool](https://github.com/TavnerJC/cuda-healthcheck-1.0)
+- [CUDA Healthcheck Tool](https://github.com/TavnerJC/cuda-healthcheck-on-databricks)
 - [Databricks Routing Accelerator](https://github.com/databricks-industry-solutions/routing)
 - NVIDIA CuOPT 25.10+
 
@@ -41,7 +41,7 @@ Create 3 notebooks in your Databricks workspace:
 **🆕 Use the production-validated enhanced notebook:**
 
 **File:** `notebooks/01_cuda_environment_validation_enhanced.py`  
-**GitHub:** https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
+**GitHub:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
 
 **Features:**
 - ✅ GPU detection (Classic & Serverless)
@@ -54,12 +54,12 @@ Create 3 notebooks in your Databricks workspace:
 **Quick Import:**
 1. In Databricks, go to **Workspace** → **Import**
 2. Select **URL**
-3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/01_cuda_environment_validation_enhanced.py`
+3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/01_cuda_environment_validation_enhanced.py`
 4. Attach to your GPU cluster and run!
 
 **Quick Start:**
 ```python
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
 
 # Then run the notebook cells step by step
@@ -92,7 +92,7 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 # Install CUDA Healthcheck Tool
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
 
 # COMMAND ----------
@@ -228,7 +228,7 @@ if changes_13:
         print(f"\n📚 Code Reference:")
         print(f"  File: cuda_healthcheck/data/breaking_changes.py")
         print(f"  Change ID: {change.id}")
-        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
+        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
 else:
     print("\n✅ No breaking changes found for CUDA 13.0")
 
@@ -269,8 +269,8 @@ print("📚 REFERENCES")
 print("=" * 80)
 print("Breaking Changes Database:")
 print("  • Local: cuda_healthcheck/data/breaking_changes.py")
-print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
-print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
+print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
+print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
 print("=" * 80)
 
 # COMMAND ----------
@@ -932,7 +932,7 @@ After benchmarking:
 
 ```bash
 # Clone both repositories
-git clone https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+git clone https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 git clone https://github.com/databricks-industry-solutions/routing.git
 
 # Upload notebooks to Databricks
@@ -962,7 +962,7 @@ databricks runs submit --json '{
 
 ## 📚 **References**
 
-1. [CUDA Healthcheck Tool (GitHub)](https://github.com/TavnerJC/cuda-healthcheck-1.0)
+1. [CUDA Healthcheck Tool (GitHub)](https://github.com/TavnerJC/cuda-healthcheck-on-databricks)
 2. [Databricks Routing Accelerator (GitHub)](https://github.com/databricks-industry-solutions/routing)
 3. [GPU Route Optimization Notebook](https://github.com/databricks-industry-solutions/routing/blob/main/06_gpu_route_optimization.ipynb)
 4. [NVIDIA CuOPT Documentation](https://docs.nvidia.com/cuopt/)
@@ -983,4 +983,5 @@ Your experiment is successful when:
 ---
 
 **Ready to benchmark? Start with Notebook 1 on Databricks Serverless GPU (A10, Environment v4)!** 🚀
+
 

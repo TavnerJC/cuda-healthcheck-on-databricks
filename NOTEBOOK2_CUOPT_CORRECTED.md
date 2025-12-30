@@ -440,3 +440,4 @@ pip install --extra-index-url=https://pypi.nvidia.com cuopt-server-cu12==26.02.*
 
 **Thank you for the correction! CuOPT is indeed open source and perfect for our A10 vs H100 benchmark!** 🎉
 
+

@@ -359,7 +359,7 @@ print(f"Expected Performance Gain: {recommendation['expected_gain']}")
 
 ```bash
 # In your Databricks notebook (Cell 1)
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 ```python
@@ -542,7 +542,7 @@ Add this to your Databricks routing notebooks:
 
 ```python
 # Cell 1: Install and validate
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
 
 # Cell 2: Check CuOPT compatibility
@@ -607,10 +607,11 @@ else:
 
 **Try it now:**
 ```bash
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 ---
 
 **This use case demonstrates how the CUDA Healthcheck Tool provides actionable intelligence for real-world GPU workload optimization decisions.**
+
 

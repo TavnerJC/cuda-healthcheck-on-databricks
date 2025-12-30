@@ -43,7 +43,7 @@ The tool provides multiple integration levels:
 
 1. In Databricks, go to **Workspace** → **Import**
 2. Select **URL**
-3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/01_cuda_environment_validation_enhanced.py`
+3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/01_cuda_environment_validation_enhanced.py`
 4. Attach to a GPU cluster and run!
 
 **Why use the enhanced notebook?**
@@ -53,8 +53,8 @@ The tool provides multiple integration levels:
 - ✅ **Production-validated** - Tested on Databricks A10G
 
 **Legacy Notebooks (Backward Compatibility):**
-- Classic ML Runtime: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/databricks_healthcheck.py`
-- Serverless GPU: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/databricks_healthcheck_serverless.py`
+- Classic ML Runtime: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/databricks_healthcheck.py`
+- Serverless GPU: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/databricks_healthcheck_serverless.py`
 
 📘 **See [Databricks Deployment Guide](docs/DATABRICKS_DEPLOYMENT.md) for detailed instructions**
 
@@ -63,7 +63,7 @@ The tool provides multiple integration levels:
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+git clone https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 cd cuda-healthcheck
 ```
 
@@ -76,7 +76,7 @@ pip install -r requirements.txt
 #### 3. Or install from GitHub directly
 
 ```bash
-pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 ### 3. Set up environment variables (Local Development Only)
@@ -112,7 +112,7 @@ CUDA_HEALTHCHECK_LOG_LEVEL=DEBUG
 
 ```python
 # Cell 1: Install the package
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 # ⚠️ You'll see a red note: "Note: you may need to restart the kernel..." - This is NORMAL!
 ```
 
@@ -142,7 +142,7 @@ print(json.dumps(result, indent=2))
 
 ### Local Python (After Installation)
 
-> **Note:** These examples assume you've already installed the package locally using `pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git`
+> **Note:** These examples assume you've already installed the package locally using `pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git`
 
 > **For Databricks:** Use the provided notebooks instead - they include installation steps!
 
@@ -499,14 +499,14 @@ See [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) for complete details.
 
 ## 📄 License
 
-https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/LICENSE
+https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/LICENSE
 
 ## 📞 Support
 
 For issues or questions:
 
 - Create a GitHub issue
-- https://github.com/TavnerJC/cuda-healthcheck-1.0/issues
+- https://github.com/TavnerJC/cuda-healthcheck-on-databricks/issues
 
 ## 🔗 References
 
@@ -515,3 +515,5 @@ For issues or questions:
 - [PyTorch CUDA Support](https://pytorch.org/get-started/locally/)
 - [TensorFlow GPU Support](https://www.tensorflow.org/install/gpu)
 - [RAPIDS Documentation](https://docs.rapids.ai/)
+
+

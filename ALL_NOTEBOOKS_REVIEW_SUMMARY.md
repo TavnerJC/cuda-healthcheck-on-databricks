@@ -135,7 +135,7 @@ Notebook 3 is already perfect! ✅
    - Compatibility score: 70/100 (good for current config)
 
 2. **Notebook 2: READY TO RUN** 📊
-   - Copy from [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md)
+   - Copy from [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md)
    - Create new notebook in Databricks
    - Same settings: Serverless GPU, A10, Environment v4
    - Run all cells
@@ -221,10 +221,10 @@ Avg Solve Time: 180.5s
 
 | Resource | Link | Status |
 |----------|------|--------|
-| **All 3 Notebooks** | [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md) | ✅ Updated |
-| **Notebook 1 Fix Guide** | [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md) | ✅ Complete |
-| **Migration Path Fix** | [MIGRATION_PATH_FIX_SUMMARY.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/MIGRATION_PATH_FIX_SUMMARY.md) | ✅ Documented |
-| **Quick Summary** | [CUOPT_BENCHMARK_SUMMARY.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/CUOPT_BENCHMARK_SUMMARY.md) | ✅ Available |
+| **All 3 Notebooks** | [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md) | ✅ Updated |
+| **Notebook 1 Fix Guide** | [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md) | ✅ Complete |
+| **Migration Path Fix** | [MIGRATION_PATH_FIX_SUMMARY.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/MIGRATION_PATH_FIX_SUMMARY.md) | ✅ Documented |
+| **Quick Summary** | [CUOPT_BENCHMARK_SUMMARY.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/CUOPT_BENCHMARK_SUMMARY.md) | ✅ Available |
 
 **Latest commit:** `ef72b8f` - includes all fixes
 
@@ -253,4 +253,5 @@ All notebooks have been reviewed for:
 - Clean output with no warnings or errors
 
 **Let me know when you're ready to start Notebook 2, or if you'd like me to walk through any specific sections!** 🚀
+
 

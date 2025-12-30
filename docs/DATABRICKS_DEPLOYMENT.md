@@ -27,12 +27,12 @@ Not sure? The tool **auto-detects** and uses the right method!
 **Option A: Direct URL Import**
 1. In Databricks, go to **Workspace** → **Import**
 2. Select **URL**
-3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/databricks_healthcheck.py`
+3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/databricks_healthcheck.py`
 4. Click **Import**
 
 **Option B: Clone the Repository**
 1. In Databricks, go to **Repos** → **Add Repo**
-2. Git URL: `https://github.com/TavnerJC/cuda-healthcheck-1.0`
+2. Git URL: `https://github.com/TavnerJC/cuda-healthcheck-on-databricks`
 3. Navigate to `notebooks/databricks_healthcheck.py`
 
 ### 2. Create a GPU Cluster
@@ -208,7 +208,7 @@ For complete healthcheck functionality on workers (not just GPU detection), inst
 1. Go to your cluster configuration
 2. Click **Libraries** tab
 3. Click **Install New** → **PyPI**
-4. Enter: `git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git`
+4. Enter: `git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git`
 5. Click **Install**
 6. **Restart the cluster**
 
@@ -220,7 +220,7 @@ Create an init script to install on cluster startup:
 
 ```bash
 #!/bin/bash
-pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 Upload to DBFS and configure in cluster settings.
@@ -302,7 +302,7 @@ Driver: No GPU detected (expected for driver node)
 **Solution:**
 ```python
 # Cell 1: Install
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 
 # Cell 2: Restart (REQUIRED!)
 dbutils.library.restartPython()
@@ -399,11 +399,12 @@ Run on different clusters to compare configurations.
 
 ## 🆘 Support
 
-- **GitHub Issues:** [Report bugs or request features](https://github.com/TavnerJC/cuda-healthcheck-1.0/issues)
+- **GitHub Issues:** [Report bugs or request features](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/issues)
 - **Documentation:** Check the [main README](../README.md)
 - **Examples:** See the [notebooks folder](../notebooks/)
 
 ---
 
 **Happy GPU Healthchecking!** 🎉
+
 

@@ -56,7 +56,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: pytorch-cuda13-support
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ────────────────────────────────────────────────────────────────────────────────
 Issue #2: TensorFlow requires 2.16+ for SM_90 (H100/H200 GPUs)
@@ -77,7 +77,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: tensorflow-sm90-support
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ────────────────────────────────────────────────────────────────────────────────
 Issue #3: cuDF package name must match CUDA major version
@@ -100,7 +100,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: cudf-cuda13-packaging
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ────────────────────────────────────────────────────────────────────────────────
 Issue #4: NVIDIA Containers: CUDA 13.0 base images available Q2 2025
@@ -120,7 +120,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: nvidia-container-cuda13
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ────────────────────────────────────────────────────────────────────────────────
 Issue #5: CuDNN API changes in CUDA 13.0
@@ -140,7 +140,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: cudnn-api-changes
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ────────────────────────────────────────────────────────────────────────────────
 Issue #6: Compute capability 3.5 and 5.x deprecated
@@ -160,7 +160,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: deprecated-compute-capability
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 ================================================================================
 🔄 TRANSITION ANALYSIS: CUDA 12.6 → 13.0
@@ -179,8 +179,8 @@ Description:
 ================================================================================
 Breaking Changes Database:
   • Local: cuda_healthcheck/data/breaking_changes.py
-  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
-  • Docs: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md
+  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
+  • Docs: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md
 ================================================================================
 ```
 
@@ -216,7 +216,7 @@ Migration Path:
 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: pytorch-cuda13-support
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 ```
 
 **Solution:** Now you know:
@@ -232,7 +232,7 @@ Code Reference:
 Each issue now includes a GitHub link to the exact code that defines the breaking change:
 
 ```
-https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 ```
 
 You can:
@@ -255,7 +255,7 @@ Your current notebook will continue to work. To get the enhanced output:
 - Run it
 
 **Option B: Replace Entire Notebook** (comprehensive)
-- Copy the updated notebook from [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
+- Copy the updated notebook from [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
 - Replace all cells
 - Run all
 
@@ -318,4 +318,5 @@ Since you're on CUDA 12.6 (not upgrading to 13.0), the compatibility warnings ar
 ---
 
 **Ready to proceed to Notebook 2 (CuOPT Benchmark)?** Your environment is validated and you now have full visibility into any compatibility considerations! 🚀
+
 

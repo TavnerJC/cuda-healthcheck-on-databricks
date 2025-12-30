@@ -78,7 +78,7 @@ GitHub Actions was looking for `cuda-healthcheck/cuda-healthcheck/src/` instead 
 
 ### Repository Structure:
 ```
-GitHub Repository: TavnerJC/cuda-healthcheck-1.0/
+GitHub Repository: TavnerJC/cuda-healthcheck-on-databricks/
 ├── src/                    ← Files are at root
 ├── tests/
 ├── requirements.txt
@@ -87,7 +87,7 @@ GitHub Repository: TavnerJC/cuda-healthcheck-1.0/
 
 ### What Workflows Were Looking For:
 ```
-GitHub Repository: TavnerJC/cuda-healthcheck-1.0/
+GitHub Repository: TavnerJC/cuda-healthcheck-on-databricks/
 └── cuda-healthcheck/       ← They expected this subdirectory
     ├── src/
     ├── tests/
@@ -103,7 +103,7 @@ When you pushed from the local `cuda-healthcheck/` directory, Git pushed the **c
 
 ### 1. Monitor GitHub Actions (2-3 minutes)
 
-Go to: https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
+Go to: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
 
 You should see a new workflow run triggered by commit `9e4d8c2` with:
 - ✅ Code Quality - PASSING
@@ -129,7 +129,7 @@ Once checks pass (green checkmarks):
 gh pr merge 1 2 3 4 5 --merge --delete-branch
 
 # Or via GitHub UI:
-# https://github.com/TavnerJC/cuda-healthcheck-1.0/pulls
+# https://github.com/TavnerJC/cuda-healthcheck-on-databricks/pulls
 ```
 
 ---
@@ -180,7 +180,7 @@ jobs:
 
 ## ✨ Current Status
 
-### Repository: TavnerJC/cuda-healthcheck-1.0
+### Repository: TavnerJC/cuda-healthcheck-on-databricks
 - **Commit**: `9e4d8c2` - fix(ci): Remove incorrect working-directory paths
 - **Status**: ✅ Fix pushed to main branch
 - **Workflows**: Will re-run automatically
@@ -196,7 +196,7 @@ jobs:
 ## 📞 If Issues Persist
 
 ### Check Workflow Logs:
-1. Go to: https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
+1. Go to: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
 2. Click on the failing workflow run
 3. Click on the failing job
 4. Review the error messages
@@ -234,10 +234,10 @@ You'll know everything is working when:
 
 ## 🔗 Quick Links
 
-- **Repository**: https://github.com/TavnerJC/cuda-healthcheck-1.0
-- **Actions**: https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
-- **Pull Requests**: https://github.com/TavnerJC/cuda-healthcheck-1.0/pulls
-- **Latest Commit**: https://github.com/TavnerJC/cuda-healthcheck-1.0/commit/9e4d8c2
+- **Repository**: https://github.com/TavnerJC/cuda-healthcheck-on-databricks
+- **Actions**: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
+- **Pull Requests**: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/pulls
+- **Latest Commit**: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/commit/9e4d8c2
 
 ---
 
@@ -248,5 +248,6 @@ You'll know everything is working when:
 **Status**: Fix pushed to GitHub  
 **Next**: Wait 2-3 min for workflows to re-run  
 **Result**: All checks should pass ✅
+
 
 

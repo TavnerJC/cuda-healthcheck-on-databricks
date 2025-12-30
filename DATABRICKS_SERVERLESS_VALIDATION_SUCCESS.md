@@ -108,7 +108,7 @@ Status: ✅ PERFECT
 
 ### Cell 1: Install Package ✅
 ```python
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 ### Cell 2: Restart Python ✅
@@ -230,7 +230,7 @@ result = detect_gpu_direct()
 
 | Metric | Status | Details |
 |--------|--------|---------|
-| Package Installation | ✅ | cuda-healthcheck-1.0.0 installed |
+| Package Installation | ✅ | cuda-healthcheck-on-databricks.0 installed |
 | Python Restart | ✅ | No issues, ~10 second pause |
 | Module Import | ✅ | All imports successful |
 | Environment Detection | ✅ | Correctly identified as Serverless |
@@ -311,4 +311,5 @@ result = detect_gpu_direct()
 **🎉 Congratulations! Your CUDA Healthcheck tool is now fully validated and working on Databricks Serverless GPU Compute!**
 
 **Next:** Continue with Step 3 (Breaking Changes Analysis) and Step 4 (Direct Detection) to complete full validation.
+
 

@@ -64,7 +64,7 @@ if cuopt_lib:
             print(f"More Info:")
             print(f"   • Breaking change ID: cuopt-nvjitlink-databricks-ml-runtime")
             print(f"   • Tracked in: cuda_healthcheck/data/breaking_changes.py")
-            print(f"   • GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0")
+            print(f"   • GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks")
             print(f"{'=' * 80}")
             
             # Add to environment summary for Notebook 2
@@ -253,4 +253,5 @@ Recommended Actions:
 - ✅ `cuda_healthcheck/data/breaking_changes.py` - Added CuOPT breaking change
 - ✅ `cuda_healthcheck/cuda_detector/detector.py` - Added `detect_cuopt()` method
 - 📝 `docs/EXPERIMENT_CUOPT_BENCHMARK.md` - Enhanced Notebook 1 cells (this file)
+
 

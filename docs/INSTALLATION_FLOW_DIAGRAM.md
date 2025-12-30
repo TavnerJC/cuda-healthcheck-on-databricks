@@ -22,7 +22,7 @@ START
   │   %pip install git+https://github.com/...           │
   │                                                      │
   │   OUTPUT:                                           │
-  │   ✅ "Successfully installed cuda-healthcheck-1.0.0" │
+  │   ✅ "Successfully installed cuda-healthcheck-on-databricks.0" │
   │   ⚠️  "Note: you may need to restart..."            │
   │        ↑                                            │
   │        └─ THIS IS NORMAL! Keep going! ──────────────┤
@@ -102,7 +102,7 @@ START
 ```
 CELL 1 OUTPUT:
 ┌─────────────────────────────────────────────────┐
-│ Successfully installed cuda-healthcheck-1.0.0   │
+│ Successfully installed cuda-healthcheck-on-databricks.0   │
 │                                                 │
 │ ⚠️  Note: you may need to restart the kernel   │ ← User sees RED
 │    using %restart_python or                     │
@@ -223,7 +223,7 @@ T+0s   │ User runs Cell 1: %pip install
 T+5s   │ ⏳ Downloading package from GitHub
 T+10s  │ ⏳ Building wheel
 T+15s  │ ⏳ Installing dependencies
-T+20s  │ ✅ "Successfully installed cuda-healthcheck-1.0.0"
+T+20s  │ ✅ "Successfully installed cuda-healthcheck-on-databricks.0"
 T+20s  │ ⚠️  Red note appears: "Note: you may need to restart..."
        │
 T+25s  │ User runs Cell 2: dbutils.library.restartPython()
@@ -258,4 +258,5 @@ T+50s  │ ✅ Results displayed
 ---
 
 **Remember:** The red warning note after installation is your friend! 🎉
+
 

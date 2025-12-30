@@ -66,7 +66,7 @@ This guide helps you migrate from the legacy notebooks to the new **Enhanced Env
 
 1. In Databricks, go to **Workspace** → **Import**
 2. Select **URL**
-3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/01_cuda_environment_validation_enhanced.py`
+3. Paste: `https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/01_cuda_environment_validation_enhanced.py`
 4. Click **Import**
 
 ### **Step 2: Update Cluster**
@@ -78,7 +78,7 @@ This guide helps you migrate from the legacy notebooks to the new **Enhanced Env
 
 ```python
 # Cell 1: Install
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
 
 # Cell 2-8: Run step-by-step
@@ -181,12 +181,12 @@ Recommended Actions:
 ## 🆘 Need Help?
 
 ### **Documentation:**
-- [Enhanced Notebook on GitHub](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/notebooks/01_cuda_environment_validation_enhanced.py)
-- [Validation Report](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK1_VALIDATION_SUCCESS.md)
-- [Databricks Deployment Guide](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/DATABRICKS_DEPLOYMENT.md)
+- [Enhanced Notebook on GitHub](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/notebooks/01_cuda_environment_validation_enhanced.py)
+- [Validation Report](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK1_VALIDATION_SUCCESS.md)
+- [Databricks Deployment Guide](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_DEPLOYMENT.md)
 
 ### **Support:**
-- GitHub Issues: https://github.com/TavnerJC/cuda-healthcheck-1.0/issues
+- GitHub Issues: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/issues
 - Email: joelc@nvidia.com
 
 ---
@@ -210,4 +210,6 @@ Recommended Actions:
 *Migration Guide Updated: December 30, 2025*  
 *Enhanced Notebook Version: 1.0.0*  
 *Legacy Notebook Support: Maintained for backward compatibility*
+
+
 

@@ -78,7 +78,7 @@ if changes_13:
         print(f"\n📚 Code Reference:")
         print(f"  File: cuda_healthcheck/data/breaking_changes.py")
         print(f"  Change ID: {change.id}")
-        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
+        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
 else:
     print("\n✅ No breaking changes found for CUDA 13.0")
 
@@ -119,8 +119,8 @@ print("📚 REFERENCES")
 print("=" * 80)
 print("Breaking Changes Database:")
 print("  • Local: cuda_healthcheck/data/breaking_changes.py")
-print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
-print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
+print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
+print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
 print("=" * 80)
 ```
 
@@ -135,7 +135,7 @@ print("=" * 80)
 4. Run the cell
 
 ### **Option 2: Get Latest Complete Notebook**
-1. Go to [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
+1. Go to [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
 2. Copy entire notebook (now includes this fix)
 3. Replace your notebook
 4. Run all cells
@@ -170,7 +170,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: pytorch-cuda13-support
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 
 [... more issues ...]
 
@@ -233,8 +233,8 @@ for change in changes_13:
 ## 📚 **Updated Documentation**
 
 The fix has been applied to:
-- ✅ [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md) (All notebooks)
-- ✅ [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md) (Standalone fix)
+- ✅ [EXPERIMENT_CUOPT_BENCHMARK.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/EXPERIMENT_CUOPT_BENCHMARK.md) (All notebooks)
+- ✅ [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md) (Standalone fix)
 
 **Latest commit:** `7194aaa` (includes this fix)
 
@@ -249,4 +249,5 @@ After applying this fix:
 4. ✅ Then we proceed to Notebook 2! 🚀
 
 **This should be the final fix - the corrected code uses only methods that exist in the BreakingChangesDatabase class!**
+
 

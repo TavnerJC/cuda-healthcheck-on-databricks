@@ -18,13 +18,13 @@ except FileNotFoundError:
     long_description = "CUDA Healthcheck Tool for Databricks GPU Clusters"
 
 setup(
-    name="cuda-healthcheck",
-    version=version.get("__version__", "1.0.0"),
+    name="cuda-healthcheck-on-databricks",
+    version="0.5.0",
     author="NVIDIA - CUDA Healthcheck Team",
-    description="CUDA version compatibility checker for Databricks GPU clusters",
+    description="CUDA version compatibility checker for Databricks GPU clusters with CuOPT detection",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/TavnerJC/cuda-healthcheck-1.0",
+    url="https://github.com/TavnerJC/cuda-healthcheck-on-databricks",
     packages=find_packages(),
     python_requires=">=3.10",
     install_requires=[
@@ -42,21 +42,25 @@ setup(
         ],
     },
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
+        "Intended Audience :: Data Scientists",
+        "Intended Audience :: System Administrators",
         "Topic :: Software Development :: Testing",
         "Topic :: System :: Hardware",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
+        "Environment :: GPU :: NVIDIA CUDA",
     ],
-    keywords="cuda gpu databricks healthcheck compatibility nvidia",
+    keywords="cuda gpu databricks healthcheck compatibility nvidia cuopt routing ml-runtime",
     project_urls={
-        "Bug Reports": "https://github.com/TavnerJC/cuda-healthcheck-1.0/issues",
-        "Source": "https://github.com/TavnerJC/cuda-healthcheck-1.0",
-        "Documentation": "https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/README.md",
+        "Bug Reports": "https://github.com/TavnerJC/cuda-healthcheck-on-databricks/issues",
+        "Source": "https://github.com/TavnerJC/cuda-healthcheck-on-databricks",
+        "Documentation": "https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/README.md",
     },
 )

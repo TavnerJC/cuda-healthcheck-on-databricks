@@ -7,7 +7,7 @@
 # MAGIC ## 🆕 Enhanced Notebook (Recommended)
 # MAGIC
 # MAGIC **File:** `notebooks/01_cuda_environment_validation_enhanced.py`  
-# MAGIC **GitHub:** https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
+# MAGIC **GitHub:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
 # MAGIC
 # MAGIC **Why switch?**
 # MAGIC - ✅ **CuOPT compatibility detection** (detects nvJitLink incompatibility)
@@ -44,7 +44,7 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+# MAGIC %pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 
 # COMMAND ----------
 
@@ -295,4 +295,5 @@ print("=" * 80)
 # MAGIC - Use compatibility scores to plan upgrades
 # MAGIC
 # MAGIC **For Full Distributed Healthcheck:**
-# MAGIC Install the package at cluster level (Libraries → PyPI → `git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git`)
+# MAGIC Install the package at cluster level (Libraries → PyPI → `git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git`)
+

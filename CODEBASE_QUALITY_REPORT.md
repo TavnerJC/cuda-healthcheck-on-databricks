@@ -1,7 +1,7 @@
 # 🔍 Comprehensive Codebase Quality Report
 
 **Generated:** December 30, 2025  
-**Repository:** https://github.com/TavnerJC/cuda-healthcheck-1.0  
+**Repository:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks  
 **Commit:** Latest (5ada286)
 
 ---
@@ -196,7 +196,7 @@ Execution time: 8.87 seconds
    - Tests: PASS
    - Coverage: PASS
 
-**Latest Build:** https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
+**Latest Build:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
 
 ---
 
@@ -341,4 +341,5 @@ The CUDA Healthcheck Tool codebase meets all quality standards and is ready for 
 - ✅ Real-world use case validation (CuOPT breaking change detection)
 
 **Recommendation:** **SHIP IT!** 🚀
+
 

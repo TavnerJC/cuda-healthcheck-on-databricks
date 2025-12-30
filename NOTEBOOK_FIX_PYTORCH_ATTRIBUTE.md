@@ -18,7 +18,7 @@ The original code tried to access `env.pytorch_available`, `env.pytorch_version`
 
 # COMMAND ----------
 # Install CUDA Healthcheck Tool
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
 
 # COMMAND ----------
@@ -161,7 +161,7 @@ if changes_13:
         print(f"\n📚 Code Reference:")
         print(f"  File: cuda_healthcheck/data/breaking_changes.py")
         print(f"  Change ID: {change.id}")
-        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
+        print(f"  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
 else:
     print("\n✅ No breaking changes found for CUDA 13.0")
 
@@ -202,8 +202,8 @@ print("📚 REFERENCES")
 print("=" * 80)
 print("Breaking Changes Database:")
 print("  • Local: cuda_healthcheck/data/breaking_changes.py")
-print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py")
-print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
+print("  • GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py")
+print("  • Docs: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/USE_CASE_ROUTING_OPTIMIZATION.md")
 print("=" * 80)
 
 if score['critical_issues'] > 0:
@@ -389,4 +389,5 @@ The corrected code:
 - ✅ Saves correct environment snapshot
 
 **Copy the corrected code above and run it in your Databricks notebook!** 🚀
+
 

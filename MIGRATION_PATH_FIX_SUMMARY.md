@@ -100,7 +100,7 @@ Description:
 📚 Code Reference:
   File: cuda_healthcheck/data/breaking_changes.py
   Change ID: pytorch-cuda13-rebuild
-  GitHub: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/cuda_healthcheck/data/breaking_changes.py
+  GitHub: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/cuda_healthcheck/data/breaking_changes.py
 ```
 
 ---
@@ -135,7 +135,7 @@ if change.migration_path:
 
 ### **Option 2: Get Latest Complete Notebook**
 
-1. Go to: [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
+1. Go to: [NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/NOTEBOOK_FIX_PYTORCH_ATTRIBUTE.md)
 2. Copy the entire updated notebook (commit `0916360`)
 3. Replace your current notebook
 4. Run all cells
@@ -211,4 +211,5 @@ The dataclass stored migration steps as a **string with `\n`**, but we treated i
 ---
 
 **This fix is now live on GitHub. Update your notebook and the migration paths will be readable!** ✅
+
 

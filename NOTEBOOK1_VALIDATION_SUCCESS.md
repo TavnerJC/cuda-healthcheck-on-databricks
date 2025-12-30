@@ -266,5 +266,6 @@ Warning Issues: 0
 
 *Report Generated: 2025-12-30*  
 *Validation Environment: Databricks Classic ML Runtime 16.4, NVIDIA A10G*  
-*Tool Version: cuda-healthcheck-1.0 (commit e649b70)*
+*Tool Version: cuda-healthcheck-on-databricks (commit e649b70)*
+
 

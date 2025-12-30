@@ -89,7 +89,7 @@ data_model = routing.DataModel(10, 2)  # Error: libcuopt.so fails to load
 
 ### 🔗 Related Resources
 
-- **Issue Detection Tool:** [CUDA Healthcheck for Databricks](https://github.com/TavnerJC/cuda-healthcheck-1.0)
+- **Issue Detection Tool:** [CUDA Healthcheck for Databricks](https://github.com/TavnerJC/cuda-healthcheck-on-databricks)
   - This issue was detected and tracked in the breaking changes database
   - Breaking Change ID: `cuopt-nvjitlink-databricks-ml-runtime`
 - **NVIDIA CuOPT:** https://github.com/NVIDIA/cuopt
@@ -222,7 +222,7 @@ Please update {environment_info['databricks_runtime']} to include `nvidia-nvjitl
 
 ### 🔗 Related Resources
 
-- **Issue detected by:** [CUDA Healthcheck for Databricks](https://github.com/TavnerJC/cuda-healthcheck-1.0)
+- **Issue detected by:** [CUDA Healthcheck for Databricks](https://github.com/TavnerJC/cuda-healthcheck-on-databricks)
 - **Breaking Change ID:** `cuopt-nvjitlink-databricks-ml-runtime`
 - **NVIDIA CuOPT:** https://github.com/NVIDIA/cuopt
 
@@ -292,7 +292,8 @@ The Databricks team should either:
 ## 📊 Tracking
 
 This template is maintained as part of the CUDA Healthcheck Tool project:
-- **Repository:** https://github.com/TavnerJC/cuda-healthcheck-1.0
+- **Repository:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks
 - **File:** `GITHUB_ISSUE_TEMPLATE_CUOPT.md`
 - **Breaking Change Entry:** `cuda_healthcheck/data/breaking_changes.py`
+
 

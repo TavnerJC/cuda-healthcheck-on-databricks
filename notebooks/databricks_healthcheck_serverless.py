@@ -7,7 +7,7 @@
 # MAGIC ## 🆕 Enhanced Notebook (Recommended)
 # MAGIC
 # MAGIC **File:** `notebooks/01_cuda_environment_validation_enhanced.py`  
-# MAGIC **GitHub:** https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
+# MAGIC **GitHub:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/notebooks/01_cuda_environment_validation_enhanced.py
 # MAGIC
 # MAGIC **Why switch?**
 # MAGIC - ✅ **CuOPT compatibility detection** (detects nvJitLink incompatibility)
@@ -58,7 +58,7 @@
 
 # COMMAND ----------
 
-# MAGIC %pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+# MAGIC %pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 
 # COMMAND ----------
 
@@ -358,5 +358,6 @@ print("\n" + "=" * 80)
 # MAGIC - Variables undefined after restart? → Expected behavior, continue to Step 3+
 # MAGIC
 # MAGIC **Documentation:**
-# MAGIC - Full Guide: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/DATABRICKS_DEPLOYMENT.md
-# MAGIC - Quick Start: https://github.com/TavnerJC/cuda-healthcheck-1.0/blob/main/docs/DATABRICKS_QUICK_START.md
+# MAGIC - Full Guide: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_DEPLOYMENT.md
+# MAGIC - Quick Start: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_QUICK_START.md
+

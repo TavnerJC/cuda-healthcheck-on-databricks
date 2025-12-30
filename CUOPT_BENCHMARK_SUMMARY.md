@@ -25,7 +25,7 @@ I've created ready-to-run notebooks in [`docs/EXPERIMENT_CUOPT_BENCHMARK.md`](do
 # Select: GPU = A10, Environment = v4 (CUDA 12.6)
 
 # Notebook 1: Validate environment
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 from cuda_healthcheck import CUDADetector
 from cuda_healthcheck.databricks import detect_gpu_auto
 
@@ -185,7 +185,7 @@ score = db.score_compatibility(
 | **Experimental Design** | [`docs/EXPERIMENT_CUOPT_BENCHMARK.md`](docs/EXPERIMENT_CUOPT_BENCHMARK.md) | Full step-by-step guide |
 | **3 Notebooks** | Inside experimental design doc | Ready to copy/paste into Databricks |
 | **Use Case Analysis** | [`docs/USE_CASE_ROUTING_OPTIMIZATION.md`](docs/USE_CASE_ROUTING_OPTIMIZATION.md) | GPU selection framework |
-| **CUDA Healthcheck** | [GitHub Repo](https://github.com/TavnerJC/cuda-healthcheck-1.0) | Environment validation tool |
+| **CUDA Healthcheck** | [GitHub Repo](https://github.com/TavnerJC/cuda-healthcheck-on-databricks) | Environment validation tool |
 | **CuOPT Routing** | [Databricks Accelerator](https://github.com/databricks-industry-solutions/routing) | Original routing notebook |
 
 ---
@@ -194,7 +194,7 @@ score = db.score_compatibility(
 
 ```bash
 # 1. Clone both repos locally (optional - for reference)
-git clone https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+git clone https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 git clone https://github.com/databricks-industry-solutions/routing.git
 
 # 2. Open Databricks workspace
@@ -259,4 +259,5 @@ Your experiment is successful when:
 ---
 
 **Ready to start? Open [`docs/EXPERIMENT_CUOPT_BENCHMARK.md`](docs/EXPERIMENT_CUOPT_BENCHMARK.md) and copy Notebook 1!** 🚀
+
 

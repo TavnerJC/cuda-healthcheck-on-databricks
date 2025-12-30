@@ -245,7 +245,7 @@ Push triggered for commit `c3bcfc5`. Expected results:
 
 ## Monitor Progress
 
-Go to: https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
+Go to: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
 
 You should see a new workflow run for commit `c3bcfc5` starting now.
 
@@ -279,4 +279,5 @@ You should see a new workflow run for commit `c3bcfc5` starting now.
 ---
 
 **Status:** 🎉 ALL ISSUES RESOLVED - READY FOR PRODUCTION
+
 

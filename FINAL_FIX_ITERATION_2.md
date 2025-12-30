@@ -132,7 +132,7 @@ bd735fc Type Safety, Performance & Documentation Enhancements
 
 ## 🚀 Monitor Progress
 
-**GitHub Actions**: https://github.com/TavnerJC/cuda-healthcheck-1.0/actions
+**GitHub Actions**: https://github.com/TavnerJC/cuda-healthcheck-on-databricks/actions
 
 **Expected Timeline**:
 - **0-1 min**: Workflows start running
@@ -192,5 +192,6 @@ If there are still failures after this push:
 4. **Try re-running failed jobs** (sometimes transient issues)
 
 All local checks pass identical to what GitHub runs, so this should work! ✨
+
 
 

@@ -315,3 +315,4 @@ if not compat_check["compatible"]:
 # MAGIC - Last Updated: December 2024
 # MAGIC - Compatible with: CUDA 12.4, 12.6, 13.0
 # MAGIC - Requires: GPU-enabled Databricks cluster
+

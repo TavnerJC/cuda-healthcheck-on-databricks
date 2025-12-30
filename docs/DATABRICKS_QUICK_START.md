@@ -18,7 +18,7 @@
 
 **Import URL:**
 ```
-https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/databricks_healthcheck_serverless.py
+https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-on-databricks/main/notebooks/databricks_healthcheck_serverless.py
 ```
 
 **Steps:**
@@ -44,7 +44,7 @@ https://raw.githubusercontent.com/TavnerJC/cuda-healthcheck-1.0/main/notebooks/d
 
 **What you'll run:**
 ```python
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-1.0.git
+%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 ```
 
 **What you'll see:**
@@ -54,7 +54,7 @@ Building wheels for collected packages: cuda-healthcheck
   Building wheel for cuda-healthcheck (pyproject.toml): finished with status 'done'
 Successfully built cuda-healthcheck
 Installing collected packages: cuda-healthcheck
-Successfully installed cuda-healthcheck-1.0.0
+Successfully installed cuda-healthcheck-on-databricks.0
 ```
 
 **Then you'll see this RED NOTE:**
@@ -130,7 +130,7 @@ gpu_info = detect_gpu_auto()
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Cell 1: %pip install git+https://...                        │
-│ Output: "Successfully installed cuda-healthcheck-1.0.0"     │
+│ Output: "Successfully installed cuda-healthcheck-on-databricks.0"     │
 │ Warning: "⚠️ Note: you may need to restart..." ← NORMAL!    │
 └─────────────────────────────────────────────────────────────┘
                             ↓
@@ -203,4 +203,5 @@ Once running successfully:
 **Total Time:** ~5 minutes ⏱️  
 **Difficulty:** Easy 🟢  
 **Success Rate:** 99%+ when following these steps 🎯
+
 

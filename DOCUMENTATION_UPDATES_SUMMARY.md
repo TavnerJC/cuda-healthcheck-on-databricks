@@ -99,7 +99,7 @@ or dbutils.library.restartPython() to use updated packages.
 
 ```
 User: Runs Cell 1 (%pip install)
-System: "Successfully installed cuda-healthcheck-1.0.0"
+System: "Successfully installed cuda-healthcheck-on-databricks.0"
 System: ⚠️ "Note: you may need to restart..."  [RED TEXT]
 User: 😰 "Oh no, what went wrong?"
 User: 🤔 "Should I be concerned about this note?"
@@ -110,7 +110,7 @@ User: 📸 Takes screenshot and asks for help
 
 ```
 User: Runs Cell 1 (%pip install)
-System: "Successfully installed cuda-healthcheck-1.0.0"
+System: "Successfully installed cuda-healthcheck-on-databricks.0"
 System: ⚠️ "Note: you may need to restart..."  [RED TEXT]
 README: "⚠️ You'll see a red note: 'Note: you may need to restart...' - This is NORMAL!"
 README: "✅ This is EXPECTED! It means the package installed successfully."
@@ -273,4 +273,5 @@ The red warning note after `%pip install` is **completely normal** and indicates
 - ✅ Preemptive troubleshooting (8 common issues)
 
 **Users should now feel confident proceeding to the restart cell instead of stopping in confusion.** 🚀
+
 
