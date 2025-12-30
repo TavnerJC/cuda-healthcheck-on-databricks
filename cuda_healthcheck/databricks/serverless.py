@@ -227,8 +227,8 @@ def detect_gpu_distributed() -> Dict[str, Any]:
         )
 
         # Deduplicate by hostname + GPU UUID
-        unique_gpus = {}
-        worker_nodes = {}
+        unique_gpus: Dict[str, Any] = {}
+        worker_nodes: Dict[str, Any] = {}
 
         for result in worker_results:
             hostname = result["hostname"]
