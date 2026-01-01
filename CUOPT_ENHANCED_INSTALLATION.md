@@ -179,3 +179,5 @@ If the enhanced installation still doesn't work, it suggests:
 **Fallback:** Use **OR-Tools** (proven working) from `NOTEBOOK2_ORTOOLS_WORKING.md`
 
 
+
+

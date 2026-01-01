@@ -409,3 +409,5 @@ Score = 100 - (critical_count × 30) - (warning_count × 10) - (info_count × 2)
 
 
 
+
+

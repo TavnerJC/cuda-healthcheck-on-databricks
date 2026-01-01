@@ -320,3 +320,5 @@ Since you're on CUDA 12.6 (not upgrading to 13.0), the compatibility warnings ar
 **Ready to proceed to Notebook 2 (CuOPT Benchmark)?** Your environment is validated and you now have full visibility into any compatibility considerations! 🚀
 
 
+
+

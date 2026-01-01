@@ -46,6 +46,10 @@ from .databricks_integration import (
     HealthcheckResult,
     get_healthchecker,
 )
+from .runtime_detector import (
+    detect_databricks_runtime,
+    get_runtime_info_summary,
+)
 from .serverless import (
     detect_gpu_auto,
     detect_gpu_direct,
@@ -62,6 +66,9 @@ __all__ = [
     "DatabricksConnector",
     "is_databricks_environment",
     "ClusterInfo",
+    # Runtime detection
+    "detect_databricks_runtime",
+    "get_runtime_info_summary",
     # Serverless-aware GPU detection
     "detect_gpu_auto",
     "detect_gpu_direct",
