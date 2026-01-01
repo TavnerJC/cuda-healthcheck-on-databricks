@@ -49,11 +49,42 @@
 # MAGIC %md
 # MAGIC ## 📦 Step 1: Install CUDA Healthcheck Tool
 # MAGIC
-# MAGIC Install from GitHub. This includes all the latest compatibility checks.
+# MAGIC Install from GitHub. Force reinstall to ensure we have the latest version (v0.5.0)
+# MAGIC with runtime detection, driver mapping, and PyTorch compatibility checks.
 
 # COMMAND ----------
-%pip install git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
+# Force reinstall to get latest version with all new features
+%pip uninstall -y cuda-healthcheck-on-databricks cuda-healthcheck
+%pip install --no-cache-dir git+https://github.com/TavnerJC/cuda-healthcheck-on-databricks.git
 dbutils.library.restartPython()
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## ✅ Verify Installation
+# MAGIC
+# MAGIC Confirm we have v0.5.0 with driver mapping functions.
+
+# COMMAND ----------
+# Verify installation
+try:
+    from cuda_healthcheck import __version__
+    from cuda_healthcheck.databricks import (
+        detect_databricks_runtime,
+        get_driver_version_for_runtime,
+        check_driver_compatibility,
+    )
+    print(f"✅ CUDA Healthcheck version: {__version__}")
+    print(f"✅ All driver mapping functions available!")
+    print(f"\n📦 Available features:")
+    print(f"   • Runtime detection")
+    print(f"   • Driver version mapping")
+    print(f"   • Driver compatibility checking")
+    print(f"   • PyTorch + Driver validation")
+    print(f"   • CuOPT nvJitLink detection")
+except ImportError as e:
+    print(f"❌ Import Error: {e}")
+    print(f"\n💡 Solution: Rerun the install cell above")
+    raise
 
 # COMMAND ----------
 # MAGIC %md
