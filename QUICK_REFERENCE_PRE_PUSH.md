@@ -4,6 +4,22 @@
 
 **ALWAYS run quality checks locally BEFORE pushing to GitHub!**
 
+## ⚠️ CRITICAL: Line Length Configuration
+
+Our codebase uses **100-character line length** (not Black's default of 88):
+
+```bash
+# ✅ CORRECT (matches CI/CD)
+python -m black --line-length 100 cuda_healthcheck/ tests/
+python -m isort --profile black --line-length 100 cuda_healthcheck/ tests/
+
+# ❌ WRONG (uses Black's default of 88, will fail CI/CD)
+python -m black cuda_healthcheck/ tests/
+python -m isort cuda_healthcheck/ tests/
+```
+
+**Always include `--line-length 100`** or use the provided scripts which have it configured.
+
 ---
 
 ## ⚡ Quick Commands
