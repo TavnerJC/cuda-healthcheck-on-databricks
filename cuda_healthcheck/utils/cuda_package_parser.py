@@ -105,9 +105,7 @@ def parse_cuda_packages(pip_freeze_output: str) -> Dict[str, Any]:
             nvjitlink_version = _extract_version(line)
             if nvjitlink_version:
                 result["nvjitlink"]["version"] = nvjitlink_version
-                result["nvjitlink"]["major_minor"] = _extract_major_minor(
-                    nvjitlink_version
-                )
+                result["nvjitlink"]["major_minor"] = _extract_major_minor(nvjitlink_version)
             continue
 
         # Parse other nvidia-* packages
@@ -238,9 +236,7 @@ def get_cuda_packages_from_pip() -> Dict[str, Any]:
     import subprocess
 
     try:
-        result = subprocess.run(
-            ["pip", "freeze"], capture_output=True, text=True, check=True
-        )
+        result = subprocess.run(["pip", "freeze"], capture_output=True, text=True, check=True)
         return parse_cuda_packages(result.stdout)
     except subprocess.CalledProcessError as e:
         return {
@@ -291,8 +287,7 @@ def format_cuda_packages_report(packages: Dict[str, Any]) -> str:
     # cuBLAS
     if packages["cublas"]["version"]:
         lines.append(
-            f"cuBLAS: {packages['cublas']['version']} "
-            f"({packages['cublas']['major_minor']})"
+            f"cuBLAS: {packages['cublas']['version']} " f"({packages['cublas']['major_minor']})"
         )
     else:
         lines.append("cuBLAS: Not installed")
