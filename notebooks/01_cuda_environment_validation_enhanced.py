@@ -66,6 +66,7 @@
 # MAGIC - **Smart fixes** - Provides specific pip commands with context
 # MAGIC - **Platform-aware** - Understands Runtime 14.3 immutable drivers
 # MAGIC - **Multiple solutions** - Offers alternatives when available
+# MAGIC - **User-friendly recommendations** - Converts technical errors to plain English
 # MAGIC
 # MAGIC ## Requirements:
 # MAGIC
@@ -1031,10 +1032,19 @@ else:
 # MAGIC ### Intelligent CUDA Availability Diagnostics (NEW!)
 # MAGIC
 # MAGIC **Feature-aware diagnostics** - automatically determines if CUDA is actually needed,
-# MAGIC then intelligently diagnoses any issues with root cause analysis and fix commands.
+# MAGIC then intelligently diagnoses any issues with root cause analysis and user-friendly
+# MAGIC recommendations in plain English.
+# MAGIC
+# MAGIC **What you'll see if there's a problem:**
+# MAGIC - Clear explanation of what's wrong
+# MAGIC - Why it matters for your workload
+# MAGIC - Step-by-step fix commands
+# MAGIC - Multiple solution options when available
+# MAGIC - Runtime-specific constraints (e.g., immutable drivers on Runtime 14.3)
 
 # COMMAND ----------
 from cuda_healthcheck.nemo import diagnose_cuda_availability
+from cuda_healthcheck.utils import format_recommendations_for_notebook
 
 print("\n🔬 Running Intelligent CUDA Diagnostics...")
 print("=" * 80)
@@ -1078,21 +1088,24 @@ if diag['expected_driver_min']:
 if diag['is_driver_compatible'] is not None:
     print(f"   Driver Compatible: {diag['is_driver_compatible']}")
 
-# Show fix commands if there are blockers
+# Show user-friendly recommendations if there are blockers
 if cuda_diag['severity'] == 'BLOCKER':
-    print(f"\n🚨 BLOCKER DETECTED!")
-    print("=" * 80)
-    print(f"❌ Issue: {diag['issue']}")
+    print("\n")
+    # Convert to blocker format for recommendation generator
+    blockers = [
+        {
+            "issue": diag['issue'],
+            "root_cause": diag['root_cause'],
+            "fix_options": cuda_diag['fix_options']
+        }
+    ]
     
-    if cuda_diag['fix_options']:
-        print(f"\n🔧 Fix Options:")
-        for i, option in enumerate(cuda_diag['fix_options'], 1):
-            print(f"   {i}. {option}")
-    elif cuda_diag['fix_command']:
-        print(f"\n🔧 Fix Command:")
-        print(f"   {cuda_diag['fix_command']}")
-    
-    print("=" * 80)
+    # Generate and display user-friendly recommendations
+    recommendations = format_recommendations_for_notebook(
+        blockers,
+        runtime_version=runtime_info.get('runtime_version')
+    )
+    print(recommendations)
     
 elif cuda_diag['severity'] == 'OK':
     print(f"\n✅ CUDA is working correctly!")
@@ -1153,15 +1166,27 @@ print(f"   GPU Memory: {env_info['gpu_memory_gb']:.1f} GB" if env_info['gpu_memo
 
 # Display blockers
 if validation_report['blockers']:
-    print(f"\n🚨 CRITICAL BLOCKERS:")
-    print("=" * 80)
-    for blocker in validation_report['blockers']:
-        print(f"\n❌ Feature: {blocker['feature']}")
-        print(f"   Issue: {blocker['message']}")
-        print(f"\n   🔧 Fix Commands:")
-        for cmd in blocker['fix_commands']:
-            print(f"      {cmd}")
-    print("=" * 80)
+    print("\n")
+    # Use recommendation generator for user-friendly output
+    from cuda_healthcheck.utils import format_recommendations_for_notebook
+    
+    # Convert blockers to recommendation format
+    blocker_list = [
+        {
+            "issue": blocker['message'],
+            "root_cause": "",  # Feature validation blockers don't have root_cause
+            "feature": blocker['feature'],
+            "fix_options": blocker['fix_commands']
+        }
+        for blocker in validation_report['blockers']
+    ]
+    
+    recommendations = format_recommendations_for_notebook(
+        blocker_list,
+        runtime_version=runtime_info.get('runtime_version'),
+        show_technical_details=False
+    )
+    print(recommendations)
 else:
     print(f"\n✅ No blockers detected!")
 
