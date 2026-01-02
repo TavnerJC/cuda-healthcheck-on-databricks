@@ -20,6 +20,12 @@
 # MAGIC
 # MAGIC ## Key Features (v0.5.0):
 # MAGIC
+# MAGIC ### Mixed CUDA 11/12 Detection (NEW!)
+# MAGIC - Detects packages from both CUDA 11 and CUDA 12 in same environment
+# MAGIC - Prevents: LD_LIBRARY_PATH conflicts, segfaults, symbol errors
+# MAGIC - Provides comprehensive uninstall + reinstall commands
+# MAGIC - Critical for environments with mixed package sources
+# MAGIC
 # MAGIC ### cuBLAS/nvJitLink Version Match (NEW!)
 # MAGIC - Validates cuBLAS ↔ nvJitLink major.minor versions match
 # MAGIC - Prevents: "undefined symbol: __nvJitLinkAddData_12_X"
@@ -170,9 +176,26 @@ print("=" * 80)
 # MAGIC %md
 # MAGIC ## 🔬 Step 4: cuBLAS/nvJitLink Version Compatibility (NEW!)
 # MAGIC
-# MAGIC **CRITICAL CHECK**: Validates that cuBLAS and nvJitLink versions match.
+# MAGIC **CRITICAL CHECKS**: 
+# MAGIC 1. **Mixed CUDA 11/12 Detection** - Prevents LD_LIBRARY_PATH conflicts
+# MAGIC 2. **cuBLAS/nvJitLink Version Match** - Prevents undefined symbol errors
 # MAGIC
-# MAGIC **Why This Matters**: cuBLAS and nvJitLink major.minor versions MUST match or you'll get:
+# MAGIC ### Check 1: Mixed CUDA 11/12 Packages
+# MAGIC **Problem**: Installing both CUDA 11 and CUDA 12 packages causes:
+# MAGIC - Random segmentation faults
+# MAGIC - Symbol resolution failures
+# MAGIC - Inconsistent behavior
+# MAGIC 
+# MAGIC **Example**:
+# MAGIC ```python
+# MAGIC pip install torch==2.0.1+cu118      # CUDA 11.8
+# MAGIC pip install cudf-cu12               # CUDA 12.x
+# MAGIC # → LD_LIBRARY_PATH has both cu11 and cu12 libraries
+# MAGIC # → Dynamic linker loads wrong version → CRASH
+# MAGIC ```
+# MAGIC
+# MAGIC ### Check 2: cuBLAS/nvJitLink Version Match
+# MAGIC **Problem**: cuBLAS and nvJitLink major.minor versions MUST match:
 # MAGIC ```
 # MAGIC undefined symbol: __nvJitLinkAddData_12_X, version libnvJitLink.so.12
 # MAGIC ```
@@ -183,9 +206,11 @@ print("=" * 80)
 from cuda_healthcheck.utils import (
     get_cuda_packages_from_pip,
     check_cublas_nvjitlink_version_match,
+    detect_mixed_cuda_versions,
     validate_cuda_library_versions,
     format_cuda_packages_report
 )
+import subprocess
 
 print("=" * 80)
 print("🔬 cuBLAS/nvJitLink VERSION COMPATIBILITY CHECK")
@@ -198,15 +223,50 @@ packages = get_cuda_packages_from_pip()
 print("\n📦 Installed CUDA Packages:")
 print(format_cuda_packages_report(packages))
 
-# Check cuBLAS/nvJitLink compatibility
+# CHECK 1: Mixed CUDA 11/12 Detection
+print(f"\n{'=' * 80}")
+print("🔍 CHECK 1: Mixed CUDA 11/12 Package Detection")
+print(f"{'=' * 80}")
+
+# Get full pip freeze for mixed version detection
+pip_result = subprocess.run(["pip", "freeze"], capture_output=True, text=True)
+pip_freeze = pip_result.stdout
+
+mixed_result = detect_mixed_cuda_versions(pip_freeze)
+
+if mixed_result['is_mixed']:
+    print(f"\n{'🚨' * 40}")
+    print("❌ CRITICAL ERROR: MIXED CUDA VERSIONS DETECTED!")
+    print(f"{'🚨' * 40}\n")
+    print(mixed_result['error_message'])
+    print(f"\n{'=' * 80}")
+    print("✅ HOW TO FIX")
+    print(f"{'=' * 80}\n")
+    print(mixed_result['fix_command'])
+    print(f"\n{'=' * 80}")
+    
+    # Store for summary
+    has_mixed_cuda = True
+else:
+    print(f"\n✅ NO MIXED CUDA VERSIONS")
+    if mixed_result['has_cu12']:
+        print(f"   All packages using CUDA 12 ({mixed_result['cu12_count']} packages)")
+    elif mixed_result['has_cu11']:
+        print(f"   All packages using CUDA 11 ({mixed_result['cu11_count']} packages)")
+    else:
+        print(f"   No CUDA-specific packages detected")
+    
+    has_mixed_cuda = False
+
+# CHECK 2: cuBLAS/nvJitLink Version Match
+print(f"\n{'=' * 80}")
+print("🔍 CHECK 2: cuBLAS ↔ nvJitLink Version Match")
+print(f"{'=' * 80}")
+
 cublas_version = packages['cublas']['version']
 nvjitlink_version = packages['nvjitlink']['version']
 
 if cublas_version and nvjitlink_version:
-    print(f"\n{'=' * 80}")
-    print("🔍 Checking cuBLAS ↔ nvJitLink Compatibility")
-    print(f"{'=' * 80}")
-    
     result = check_cublas_nvjitlink_version_match(cublas_version, nvjitlink_version)
     
     if result['is_mismatch']:
@@ -748,14 +808,32 @@ for lib in env.libraries:
     status = "✅" if lib.is_compatible else "⚠️"
     print(f"   {status} {lib.name}: {lib.version}")
 
+# Check for CRITICAL issues first
+critical_issues = []
+
+# Check mixed CUDA versions
+if 'has_mixed_cuda' in locals() and has_mixed_cuda:
+    critical_issues.append("Mixed CUDA 11 and CUDA 12 packages detected!")
+
 # Check cuBLAS/nvJitLink version match
-if 'cublas_nvjitlink_mismatch' in locals():
-    if cublas_nvjitlink_mismatch:
-        print(f"\n🚨 CRITICAL ISSUES:")
-        print(f"   ❌ cuBLAS/nvJitLink version MISMATCH detected!")
-        print(f"   ⚠️  This will cause undefined symbol errors")
-        print(f"   📝 Review Step 4 output for fix command")
-    else:
+if 'cublas_nvjitlink_mismatch' in locals() and cublas_nvjitlink_mismatch:
+    critical_issues.append("cuBLAS/nvJitLink version MISMATCH detected!")
+
+if critical_issues:
+    print(f"\n🚨 CRITICAL ISSUES:")
+    for issue in critical_issues:
+        print(f"   ❌ {issue}")
+    print(f"   📝 Review Step 4 output for fix commands")
+else:
+    # Show positive checks
+    if 'has_mixed_cuda' in locals() and not has_mixed_cuda:
+        print(f"\n✅ CUDA Version Consistency:")
+        if mixed_result['has_cu12']:
+            print(f"   ✓ All packages using CUDA 12 ({mixed_result['cu12_count']} packages)")
+        elif mixed_result['has_cu11']:
+            print(f"   ✓ All packages using CUDA 11 ({mixed_result['cu11_count']} packages)")
+    
+    if 'cublas_nvjitlink_mismatch' in locals() and not cublas_nvjitlink_mismatch:
         print(f"\n✅ cuBLAS/nvJitLink Compatibility:")
         print(f"   ✓ Versions match correctly ({packages['cublas']['major_minor']}.x)")
 
