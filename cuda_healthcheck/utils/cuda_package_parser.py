@@ -547,17 +547,198 @@ def check_cublas_nvjitlink_version_match(
     return result
 
 
+def detect_mixed_cuda_versions(pip_freeze_output: str) -> Dict[str, Any]:
+    """
+    Detect mixed CUDA 11 and CUDA 12 packages that cause LD_LIBRARY_PATH conflicts.
+
+    **Critical Issue**: Installing CUDA 11 and CUDA 12 packages together causes
+    symbol resolution failures and segmentation faults due to conflicting shared
+    libraries being loaded at runtime.
+
+    Common Scenario:
+    ```bash
+    pip install torch==2.0.1+cu118  # Brings CUDA 11.8 libraries
+    pip install cudf-cu12           # Brings CUDA 12.x libraries
+    # → LD_LIBRARY_PATH contains both cu11 and cu12 libraries
+    # → Random symbol resolution failures occur
+    ```
+
+    Symptoms:
+    - Segmentation faults
+    - "undefined symbol" errors (random, not consistent)
+    - "version `GLIBCXX_X.X.XX' not found"
+    - Libraries loading wrong CUDA version at runtime
+
+    Args:
+        pip_freeze_output: Output from `pip freeze` command
+
+    Returns:
+        Detection result:
+        {
+            'has_cu11': bool,              # True if any -cu11 packages found
+            'has_cu12': bool,              # True if any -cu12 packages found
+            'is_mixed': bool,              # True if BOTH cu11 and cu12 present
+            'cu11_packages': List[str],    # List of -cu11 package names
+            'cu12_packages': List[str],    # List of -cu12 package names
+            'cu11_count': int,             # Count of cu11 packages
+            'cu12_count': int,             # Count of cu12 packages
+            'severity': str,               # 'BLOCKER' if mixed, None otherwise
+            'error_message': str | None,   # Detailed error explanation
+            'fix_command': str | None      # pip commands to fix the issue
+        }
+
+    Examples:
+        >>> # CUDA 12 only (OK)
+        >>> pip_output = '''
+        ... torch==2.4.1+cu124
+        ... nvidia-cublas-cu12==12.4.5.8
+        ... cudf-cu12==24.10.1
+        ... '''
+        >>> result = detect_mixed_cuda_versions(pip_output)
+        >>> result['is_mixed']
+        False
+        >>> result['severity']
+        None
+
+        >>> # Mixed CUDA 11 and 12 (BLOCKER!)
+        >>> pip_output = '''
+        ... torch==2.0.1+cu118
+        ... nvidia-cublas-cu12==12.4.5.8
+        ... cudf-cu12==24.10.1
+        ... '''
+        >>> result = detect_mixed_cuda_versions(pip_output)
+        >>> result['is_mixed']
+        True
+        >>> result['severity']
+        'BLOCKER'
+        >>> print(result['error_message'])
+        ❌ CRITICAL: Mixed CUDA 11 and CUDA 12 packages detected!
+        <BLANKLINE>
+        This causes LD_LIBRARY_PATH conflicts and random symbol resolution failures.
+        ...
+
+        >>> # Real-world Databricks scenario
+        >>> pip_output = '''
+        ... torch==2.1.0+cu121
+        ... torchvision==0.16.0+cu121
+        ... cupy-cuda11x==12.3.0
+        ... '''
+        >>> result = detect_mixed_cuda_versions(pip_output)
+        >>> result['is_mixed']
+        True
+        >>> result['cu11_packages']
+        ['cupy-cuda11x']
+        >>> result['cu12_packages']
+        ['torch', 'torchvision']
+    """
+    result = {
+        "has_cu11": False,
+        "has_cu12": False,
+        "is_mixed": False,
+        "cu11_packages": [],
+        "cu12_packages": [],
+        "cu11_count": 0,
+        "cu12_count": 0,
+        "severity": None,
+        "error_message": None,
+        "fix_command": None,
+    }
+
+    # Parse each line for CUDA version indicators
+    lines = pip_freeze_output.strip().split("\n")
+
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # Extract package name (before ==)
+        if "==" in line:
+            package_name = line.split("==")[0]
+        else:
+            package_name = line
+
+        # Check the FULL line for CUDA indicators (captures version strings like +cu124)
+        line_lower = line.lower()
+
+        # Check for CUDA 11 indicators
+        # Patterns: -cu11, -cu118, +cu118, cuda11, cuda-11, etc.
+        if re.search(r"([-+]cu11[0-9]?|[-+]cuda11|[-+]cuda-11)", line_lower):
+            result["cu11_packages"].append(package_name)
+            result["cu11_count"] += 1
+            result["has_cu11"] = True
+
+        # Check for CUDA 12 indicators
+        # Patterns: -cu12, -cu124, +cu124, cuda12, cuda-12, etc.
+        if re.search(r"([-+]cu12[0-9]?|[-+]cuda12|[-+]cuda-12)", line_lower):
+            result["cu12_packages"].append(package_name)
+            result["cu12_count"] += 1
+            result["has_cu12"] = True
+
+    # Check if mixed versions detected
+    if result["has_cu11"] and result["has_cu12"]:
+        result["is_mixed"] = True
+        result["severity"] = "BLOCKER"
+
+        # Build error message
+        result["error_message"] = (
+            "❌ CRITICAL: Mixed CUDA 11 and CUDA 12 packages detected!\n\n"
+            f"CUDA 11 packages ({result['cu11_count']}):\n"
+        )
+        for pkg in result["cu11_packages"]:
+            result["error_message"] += f"  • {pkg}\n"
+
+        result["error_message"] += f"\nCUDA 12 packages ({result['cu12_count']}):\n"
+        for pkg in result["cu12_packages"]:
+            result["error_message"] += f"  • {pkg}\n"
+
+        result["error_message"] += (
+            "\n⚠️  This causes LD_LIBRARY_PATH conflicts!\n"
+            "   Both CUDA 11 and CUDA 12 libraries will be in the same path,\n"
+            "   causing random symbol resolution failures, segfaults, and\n"
+            "   inconsistent behavior.\n\n"
+            "📋 Why this happens:\n"
+            "   When you mix CUDA 11 and CUDA 12 packages, both versions of\n"
+            "   shared libraries (.so files) exist in site-packages. The dynamic\n"
+            "   linker may load the wrong version at runtime, causing crashes.\n\n"
+            "🔍 Common symptoms:\n"
+            "   • Segmentation fault (core dumped)\n"
+            "   • undefined symbol: [random CUDA function]\n"
+            "   • version `GLIBCXX_X.X.XX' not found\n"
+            "   • CUDA runtime version mismatch errors"
+        )
+
+        # Build fix command
+        all_packages = result["cu11_packages"] + result["cu12_packages"]
+        uninstall_cmd = "pip uninstall -y " + " ".join(all_packages)
+
+        result["fix_command"] = (
+            f"# Step 1: Uninstall ALL mixed CUDA packages\n"
+            f"{uninstall_cmd}\n\n"
+            f"# Step 2: Clear pip cache to remove old wheels\n"
+            f"pip cache purge\n\n"
+            f"# Step 3: Reinstall with CUDA 12 (recommended for Databricks)\n"
+            f"pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124\n"
+            f"pip install --extra-index-url=https://pypi.nvidia.com cudf-cu12 cuml-cu12\n\n"
+            f"# Alternative: Install with CUDA 11 (if required)\n"
+            f"# pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118"
+        )
+
+    return result
+
+
 def validate_cuda_library_versions(packages: Dict[str, Any]) -> Dict[str, Any]:
     """
     Validate all CUDA library version compatibility.
 
     Runs multiple compatibility checks:
-    1. cuBLAS/nvJitLink version match (CRITICAL)
-    2. CuOPT nvJitLink compatibility
-    3. PyTorch CUDA branch compatibility (if runtime version provided)
+    1. Mixed CUDA 11/12 packages (CRITICAL)
+    2. cuBLAS/nvJitLink version match (CRITICAL)
+    3. CuOPT nvJitLink compatibility (WARNING)
 
     Args:
         packages: Output from parse_cuda_packages()
+        pip_freeze_output: Optional raw pip freeze output for mixed version check
 
     Returns:
         Comprehensive validation result:

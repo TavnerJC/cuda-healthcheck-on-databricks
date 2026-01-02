@@ -10,6 +10,7 @@ from cuda_healthcheck.utils.cuda_package_parser import (
     check_cublas_nvjitlink_version_match,
     check_cuopt_nvjitlink_compatibility,
     check_pytorch_cuda_branch_compatibility,
+    detect_mixed_cuda_versions,
     format_cuda_packages_report,
     parse_cuda_packages,
     validate_cuda_library_versions,
@@ -539,3 +540,175 @@ nvidia-nvjitlink-cu12==12.4.127
 
         assert result["is_mismatch"] is False
         assert result["severity"] == "OK"
+
+
+class TestDetectMixedCudaVersions:
+    """Test mixed CUDA 11 and CUDA 12 package detection."""
+
+    def test_cuda_12_only(self):
+        """Test environment with CUDA 12 packages only (OK)."""
+        pip_output = """
+torch==2.4.1+cu124
+nvidia-cublas-cu12==12.4.5.8
+nvidia-nvjitlink-cu12==12.4.127
+cudf-cu12==24.10.1
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is False
+        assert result["has_cu11"] is False
+        assert result["has_cu12"] is True
+        assert result["cu11_count"] == 0
+        assert result["cu12_count"] == 4
+        assert result["severity"] is None
+        assert result["error_message"] is None
+
+    def test_cuda_11_only(self):
+        """Test environment with CUDA 11 packages only (OK)."""
+        pip_output = """
+torch==2.0.1+cu118
+nvidia-cublas-cu11==11.8.0.0
+cupy-cuda11x==12.3.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is False
+        assert result["has_cu11"] is True
+        assert result["has_cu12"] is False
+        assert result["cu11_count"] == 3
+        assert result["cu12_count"] == 0
+        assert result["severity"] is None
+
+    def test_mixed_cu11_and_cu12(self):
+        """Test mixed CUDA 11 and 12 packages (BLOCKER)."""
+        pip_output = """
+torch==2.0.1+cu118
+nvidia-cublas-cu12==12.4.5.8
+cudf-cu12==24.10.1
+cupy-cuda11x==12.3.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is True
+        assert result["has_cu11"] is True
+        assert result["has_cu12"] is True
+        assert result["cu11_count"] == 2
+        assert result["cu12_count"] == 2
+        assert result["severity"] == "BLOCKER"
+        assert "CRITICAL" in result["error_message"]
+        assert "LD_LIBRARY_PATH" in result["error_message"]
+        assert result["fix_command"] is not None
+        assert "pip uninstall" in result["fix_command"]
+        assert "pip cache purge" in result["fix_command"]
+
+    def test_mixed_torch_cu121_with_cudf_cu12(self):
+        """Test PyTorch cu121 mixed with cuDF cu12."""
+        pip_output = """
+torch==2.1.0+cu121
+torchvision==0.16.0+cu121
+cudf-cu12==24.10.1
+cuml-cu12==24.10.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        # cu121 is CUDA 12.1, so should detect cu12
+        assert result["is_mixed"] is False
+        assert result["has_cu12"] is True
+        assert result["cu12_count"] == 4
+
+    def test_mixed_with_various_naming_patterns(self):
+        """Test detection with various -cu11 and -cu12 naming patterns."""
+        pip_output = """
+some-package-cu11==1.0.0
+another-cu118==2.0.0
+third-cuda11==3.0.0
+nvidia-lib-cu12==12.4.0
+stuff-cu124==5.0.0
+more-cuda12==6.0.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is True
+        assert result["cu11_count"] == 3
+        assert result["cu12_count"] == 3
+        assert result["severity"] == "BLOCKER"
+
+    def test_empty_output(self):
+        """Test with empty pip freeze output."""
+        result = detect_mixed_cuda_versions("")
+
+        assert result["is_mixed"] is False
+        assert result["cu11_count"] == 0
+        assert result["cu12_count"] == 0
+
+    def test_no_cuda_packages(self):
+        """Test with no CUDA packages."""
+        pip_output = """
+numpy==1.24.3
+pandas==2.0.3
+scikit-learn==1.3.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is False
+        assert result["has_cu11"] is False
+        assert result["has_cu12"] is False
+
+    def test_fix_command_includes_all_packages(self):
+        """Test that fix command includes all mixed packages."""
+        pip_output = """
+torch==2.0.1+cu118
+nvidia-cublas-cu12==12.4.5.8
+cudf-cu12==24.10.1
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert "torch" in result["fix_command"]
+        assert "nvidia-cublas-cu12" in result["fix_command"]
+        assert "cudf-cu12" in result["fix_command"]
+
+    def test_databricks_scenario_mixed(self):
+        """Test real Databricks scenario with mixed packages."""
+        pip_output = """
+torch==2.4.1+cu124
+torchvision==0.19.1+cu124
+nvidia-cublas-cu12==12.4.5.8
+nvidia-cudnn-cu12==9.1.0.70
+cupy-cuda11x==12.3.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is True
+        assert result["severity"] == "BLOCKER"
+        assert "cupy-cuda11x" in result["cu11_packages"]
+        assert len(result["cu12_packages"]) == 4
+
+
+class TestMixedCudaRealWorldScenarios:
+    """Test real-world mixed CUDA scenarios."""
+
+    def test_accidental_cupy_cu11_with_torch_cu12(self):
+        """Test common mistake: installing cupy-cuda11x on CUDA 12 cluster."""
+        pip_output = """
+torch==2.4.1+cu124
+cupy-cuda11x==12.3.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is True
+        assert "torch" in str(result["cu12_packages"])
+        assert "cupy-cuda11x" in result["cu11_packages"]
+
+    def test_legacy_torch_with_new_rapids(self):
+        """Test legacy PyTorch cu118 with new RAPIDS cu12."""
+        pip_output = """
+torch==2.0.1+cu118
+torchvision==0.15.2+cu118
+cudf-cu12==24.10.1
+cuml-cu12==24.10.0
+"""
+        result = detect_mixed_cuda_versions(pip_output)
+
+        assert result["is_mixed"] is True
+        assert result["cu11_count"] == 2
+        assert result["cu12_count"] == 2
