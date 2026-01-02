@@ -10,14 +10,21 @@
 # MAGIC 1. ✅ Detects GPU hardware (Classic ML Runtime & Serverless)
 # MAGIC 2. ✅ Validates CUDA driver and runtime versions
 # MAGIC 3. ✅ **Detects Databricks Runtime version (NEW!)** 🎉
-# MAGIC 4. ✅ **Checks Driver compatibility & immutability (NEW!)** 🎉
-# MAGIC 5. ✅ **Validates PyTorch + Driver compatibility (NEW!)** 🎉
-# MAGIC 6. ✅ **Checks CuOPT nvJitLink compatibility** 🎉
-# MAGIC 7. ✅ Analyzes Databricks Runtime CUDA components
-# MAGIC 8. ✅ Provides CUDA 13.0 upgrade compatibility analysis
-# MAGIC 9. ✅ Lists detailed breaking changes with migration paths
+# MAGIC 4. ✅ **Validates cuBLAS/nvJitLink version match (NEW!)** 🎉
+# MAGIC 5. ✅ **Checks Driver compatibility & immutability (NEW!)** 🎉
+# MAGIC 6. ✅ **Validates PyTorch + Driver compatibility (NEW!)** 🎉
+# MAGIC 7. ✅ **Checks CuOPT nvJitLink compatibility** 🎉
+# MAGIC 8. ✅ Analyzes Databricks Runtime CUDA components
+# MAGIC 9. ✅ Provides CUDA 13.0 upgrade compatibility analysis
+# MAGIC 10. ✅ Lists detailed breaking changes with migration paths
 # MAGIC
 # MAGIC ## Key Features (v0.5.0):
+# MAGIC
+# MAGIC ### cuBLAS/nvJitLink Version Match (NEW!)
+# MAGIC - Validates cuBLAS ↔ nvJitLink major.minor versions match
+# MAGIC - Prevents: "undefined symbol: __nvJitLinkAddData_12_X"
+# MAGIC - Provides exact pip fix commands
+# MAGIC - Critical for ALL CUDA operations (not just CuOPT)
 # MAGIC
 # MAGIC ### Runtime Detection
 # MAGIC - Detects ML Runtime 14.3, 15.1, 15.2, 16.4, etc.
@@ -161,7 +168,114 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 🏃 Step 4: Databricks Runtime & Driver Analysis (NEW!)
+# MAGIC ## 🔬 Step 4: cuBLAS/nvJitLink Version Compatibility (NEW!)
+# MAGIC
+# MAGIC **CRITICAL CHECK**: Validates that cuBLAS and nvJitLink versions match.
+# MAGIC
+# MAGIC **Why This Matters**: cuBLAS and nvJitLink major.minor versions MUST match or you'll get:
+# MAGIC ```
+# MAGIC undefined symbol: __nvJitLinkAddData_12_X, version libnvJitLink.so.12
+# MAGIC ```
+# MAGIC
+# MAGIC This affects ALL CUDA operations (cuBLAS, cuSolver, cuFFT, etc.), not just CuOPT!
+
+# COMMAND ----------
+from cuda_healthcheck.utils import (
+    get_cuda_packages_from_pip,
+    check_cublas_nvjitlink_version_match,
+    validate_cuda_library_versions,
+    format_cuda_packages_report
+)
+
+print("=" * 80)
+print("🔬 cuBLAS/nvJitLink VERSION COMPATIBILITY CHECK")
+print("=" * 80)
+
+# Get installed CUDA packages
+packages = get_cuda_packages_from_pip()
+
+# Show package report
+print("\n📦 Installed CUDA Packages:")
+print(format_cuda_packages_report(packages))
+
+# Check cuBLAS/nvJitLink compatibility
+cublas_version = packages['cublas']['version']
+nvjitlink_version = packages['nvjitlink']['version']
+
+if cublas_version and nvjitlink_version:
+    print(f"\n{'=' * 80}")
+    print("🔍 Checking cuBLAS ↔ nvJitLink Compatibility")
+    print(f"{'=' * 80}")
+    
+    result = check_cublas_nvjitlink_version_match(cublas_version, nvjitlink_version)
+    
+    if result['is_mismatch']:
+        print(f"\n{'🚨' * 40}")
+        print("❌ CRITICAL ERROR: VERSION MISMATCH DETECTED!")
+        print(f"{'🚨' * 40}\n")
+        print(result['error_message'])
+        print(f"\n{'=' * 80}")
+        print("✅ HOW TO FIX")
+        print(f"{'=' * 80}")
+        print(f"Run this command in a new cell:\n")
+        print(f"  %pip install {result['fix_command'].replace('pip install ', '')}")
+        print(f"  dbutils.library.restartPython()")
+        print(f"\n{'=' * 80}")
+        
+        # Store for summary
+        cublas_nvjitlink_mismatch = True
+    else:
+        print(f"\n✅ COMPATIBILITY CHECK PASSED")
+        print(f"   cuBLAS: {result['cublas_major_minor']}.x")
+        print(f"   nvJitLink: {result['nvjitlink_major_minor']}.x")
+        print(f"   Status: {result['severity']}")
+        print(f"\n   Both libraries have matching major.minor versions ✓")
+        
+        cublas_nvjitlink_mismatch = False
+else:
+    print(f"\n⚠️  Could not check compatibility:")
+    print(f"   cuBLAS: {cublas_version or 'NOT INSTALLED'}")
+    print(f"   nvJitLink: {nvjitlink_version or 'NOT INSTALLED'}")
+    cublas_nvjitlink_mismatch = False
+
+# Run comprehensive validation
+print(f"\n{'=' * 80}")
+print("🔍 COMPREHENSIVE CUDA LIBRARY VALIDATION")
+print(f"{'=' * 80}")
+
+validation = validate_cuda_library_versions(packages)
+
+print(f"\n📊 Validation Summary:")
+print(f"   Total Checks: {validation['checks_run']}")
+print(f"   Passed: {validation['checks_passed']}")
+print(f"   Failed: {validation['checks_failed']}")
+print(f"   All Compatible: {validation['all_compatible']}")
+
+if validation['blockers']:
+    print(f"\n{'🚫' * 40}")
+    print(f"BLOCKING ISSUES FOUND ({len(validation['blockers'])})")
+    print(f"{'🚫' * 40}")
+    
+    for i, blocker in enumerate(validation['blockers'], 1):
+        print(f"\n{i}. {blocker['check']} - {blocker['severity']}")
+        print(f"   {blocker['error_message']}")
+        if blocker['fix_command']:
+            print(f"\n   ✅ Fix: {blocker['fix_command']}")
+
+if validation['warnings']:
+    print(f"\n{'⚠️ ' * 40}")
+    print(f"WARNINGS ({len(validation['warnings'])})")
+    print(f"{'⚠️ ' * 40}")
+    
+    for i, warning in enumerate(validation['warnings'], 1):
+        print(f"\n{i}. {warning['check']} - {warning['severity']}")
+        print(f"   {warning['error_message']}")
+
+print("=" * 80)
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 🏃 Step 5: Databricks Runtime & Driver Analysis (NEW!)
 # MAGIC
 # MAGIC **NEW FEATURE**: Detects Databricks runtime version and validates driver compatibility.
 # MAGIC Critical for detecting PyTorch + Driver incompatibilities that users cannot fix!
@@ -231,7 +345,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 🐍 Step 5: PyTorch + Driver Compatibility Check (NEW!)
+# MAGIC ## 🐍 Step 6: PyTorch + Driver Compatibility Check (NEW!)
 # MAGIC
 # MAGIC **CRITICAL**: Checks if your PyTorch version is compatible with the
 # MAGIC immutable driver version on this Databricks runtime.
@@ -314,7 +428,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 🚨 Step 6: CuOPT Compatibility Check (CRITICAL for Routing Optimization)
+# MAGIC ## 🚨 Step 7: CuOPT Compatibility Check (CRITICAL for Routing Optimization)
 # MAGIC
 # MAGIC **This is the key detection!** Checks if CuOPT can actually load on this
 # MAGIC Databricks runtime, specifically looking for the nvJitLink version mismatch.
@@ -391,7 +505,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 🔍 Step 7: Check Databricks Runtime CUDA Components
+# MAGIC ## 🔍 Step 8: Check Databricks Runtime CUDA Components
 # MAGIC
 # MAGIC Specifically checks the nvJitLink version in the Databricks runtime.
 # MAGIC This is the component that causes CuOPT compatibility issues.
@@ -474,7 +588,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 💯 Step 8: CUDA 13.0 Upgrade Compatibility
+# MAGIC ## 💯 Step 9: CUDA 13.0 Upgrade Compatibility
 # MAGIC
 # MAGIC Tests what would happen if you upgraded to CUDA 13.0.
 # MAGIC Provides a compatibility score and identifies breaking changes.
@@ -516,7 +630,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 📋 Step 9: Detailed Compatibility Issues
+# MAGIC ## 📋 Step 10: Detailed Compatibility Issues
 # MAGIC
 # MAGIC Provides complete details on ALL breaking changes for CUDA 13.0:
 # MAGIC - What breaks
@@ -606,7 +720,7 @@ print("=" * 80)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 📊 Step 10: Summary
+# MAGIC ## 📊 Step 11: Summary
 # MAGIC
 # MAGIC Final summary of your environment validation.
 
@@ -633,6 +747,17 @@ print(f"\n📚 Installed Libraries:")
 for lib in env.libraries:
     status = "✅" if lib.is_compatible else "⚠️"
     print(f"   {status} {lib.name}: {lib.version}")
+
+# Check cuBLAS/nvJitLink version match
+if 'cublas_nvjitlink_mismatch' in locals():
+    if cublas_nvjitlink_mismatch:
+        print(f"\n🚨 CRITICAL ISSUES:")
+        print(f"   ❌ cuBLAS/nvJitLink version MISMATCH detected!")
+        print(f"   ⚠️  This will cause undefined symbol errors")
+        print(f"   📝 Review Step 4 output for fix command")
+    else:
+        print(f"\n✅ cuBLAS/nvJitLink Compatibility:")
+        print(f"   ✓ Versions match correctly ({packages['cublas']['major_minor']}.x)")
 
 # Check if cuopt_incompatible variable exists (only set when CuOPT is installed)
 if 'cuopt_incompatible' in locals() and cuopt_incompatible:
