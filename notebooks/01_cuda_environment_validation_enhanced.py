@@ -32,6 +32,12 @@
 # MAGIC - Provides exact pip fix commands
 # MAGIC - Critical for ALL CUDA operations (not just CuOPT)
 # MAGIC
+# MAGIC ### PyTorch CUDA Branch Validator (NEW!)
+# MAGIC - Validates PyTorch cu branch against Databricks runtime
+# MAGIC - Detects Runtime 14.3 + cu124 incompatibility (BLOCKER)
+# MAGIC - Provides two fix options: downgrade PyTorch or upgrade runtime
+# MAGIC - Explains immutable driver constraints
+# MAGIC
 # MAGIC ### Runtime Detection
 # MAGIC - Detects ML Runtime 14.3, 15.1, 15.2, 16.4, etc.
 # MAGIC - Identifies Serverless GPU Compute
@@ -179,6 +185,7 @@ print("=" * 80)
 # MAGIC **CRITICAL CHECKS**: 
 # MAGIC 1. **Mixed CUDA 11/12 Detection** - Prevents LD_LIBRARY_PATH conflicts
 # MAGIC 2. **cuBLAS/nvJitLink Version Match** - Prevents undefined symbol errors
+# MAGIC 3. **PyTorch CUDA Branch Runtime** - Validates cu branch compatibility
 # MAGIC
 # MAGIC ### Check 1: Mixed CUDA 11/12 Packages
 # MAGIC **Problem**: Installing both CUDA 11 and CUDA 12 packages causes:
@@ -200,6 +207,14 @@ print("=" * 80)
 # MAGIC undefined symbol: __nvJitLinkAddData_12_X, version libnvJitLink.so.12
 # MAGIC ```
 # MAGIC
+# MAGIC ### Check 3: PyTorch CUDA Branch Runtime Compatibility
+# MAGIC **Problem**: Runtime 14.3 (CUDA 12.0, Driver 535) **CANNOT** run PyTorch cu124:
+# MAGIC ```
+# MAGIC Runtime 14.3 + cu124 → BLOCKER
+# MAGIC  Fix Option 1: Downgrade PyTorch to cu120 or cu121
+# MAGIC  Fix Option 2: Upgrade to Runtime 15.2+ (CUDA 12.4, Driver 550)
+# MAGIC ```
+# MAGIC
 # MAGIC This affects ALL CUDA operations (cuBLAS, cuSolver, cuFFT, etc.), not just CuOPT!
 
 # COMMAND ----------
@@ -208,8 +223,10 @@ from cuda_healthcheck.utils import (
     check_cublas_nvjitlink_version_match,
     detect_mixed_cuda_versions,
     validate_cuda_library_versions,
+    validate_torch_branch_compatibility,
     format_cuda_packages_report
 )
+from cuda_healthcheck.databricks import detect_databricks_runtime
 import subprocess
 
 print("=" * 80)
@@ -297,6 +314,61 @@ else:
     print(f"   cuBLAS: {cublas_version or 'NOT INSTALLED'}")
     print(f"   nvJitLink: {nvjitlink_version or 'NOT INSTALLED'}")
     cublas_nvjitlink_mismatch = False
+
+# CHECK 3: PyTorch CUDA Branch Runtime Compatibility
+print(f"\n{'=' * 80}")
+print("🔍 CHECK 3: PyTorch CUDA Branch ↔ Runtime Compatibility")
+print(f"{'=' * 80}")
+
+from cuda_healthcheck.utils import validate_torch_branch_compatibility
+from cuda_healthcheck.databricks import detect_databricks_runtime
+
+# Get runtime info
+runtime_info = detect_databricks_runtime()
+torch_branch = packages['torch_cuda_branch']
+
+if runtime_info['runtime_version'] and torch_branch:
+    print(f"\n📊 Environment Info:")
+    print(f"   Databricks Runtime: {runtime_info['runtime_version']}")
+    print(f"   PyTorch CUDA Branch: {torch_branch}")
+    
+    branch_result = validate_torch_branch_compatibility(
+        runtime_info['runtime_version'],
+        torch_branch
+    )
+    
+    if not branch_result['is_compatible']:
+        print(f"\n{'🚨' * 40}")
+        print("❌ CRITICAL ERROR: PYTORCH BRANCH INCOMPATIBLE!")
+        print(f"{'🚨' * 40}\n")
+        print(branch_result['issue'])
+        print(f"\n{'=' * 80}")
+        print("✅ FIX OPTIONS")
+        print(f"{'=' * 80}\n")
+        for i, fix_option in enumerate(branch_result['fix_options'], 1):
+            print(f"{fix_option}\n")
+        print(f"{'=' * 80}")
+        
+        # Store for summary
+        torch_branch_incompatible = True
+    else:
+        print(f"\n✅ COMPATIBILITY CHECK PASSED")
+        print(f"   Runtime {branch_result['runtime_version']} supports {torch_branch}")
+        print(f"   Runtime CUDA: {branch_result['runtime_cuda']}")
+        print(f"   Runtime Driver: {branch_result['runtime_driver']}")
+        print(f"\n   PyTorch CUDA branch is compatible with this runtime ✓")
+        
+        torch_branch_incompatible = False
+elif not torch_branch:
+    print(f"\n⚠️  PyTorch not installed or CPU-only version detected")
+    print(f"   Cannot validate CUDA branch compatibility")
+    torch_branch_incompatible = False
+elif not runtime_info['runtime_version']:
+    print(f"\n⚠️  Could not detect Databricks runtime version")
+    print(f"   Cannot validate PyTorch branch compatibility")
+    torch_branch_incompatible = False
+else:
+    torch_branch_incompatible = False
 
 # Run comprehensive validation
 print(f"\n{'=' * 80}")
@@ -819,6 +891,10 @@ if 'has_mixed_cuda' in locals() and has_mixed_cuda:
 if 'cublas_nvjitlink_mismatch' in locals() and cublas_nvjitlink_mismatch:
     critical_issues.append("cuBLAS/nvJitLink version MISMATCH detected!")
 
+# Check PyTorch branch runtime compatibility
+if 'torch_branch_incompatible' in locals() and torch_branch_incompatible:
+    critical_issues.append(f"PyTorch {packages['torch_cuda_branch']} incompatible with Runtime {runtime_info['runtime_version']}!")
+
 if critical_issues:
     print(f"\n🚨 CRITICAL ISSUES:")
     for issue in critical_issues:
@@ -836,6 +912,10 @@ else:
     if 'cublas_nvjitlink_mismatch' in locals() and not cublas_nvjitlink_mismatch:
         print(f"\n✅ cuBLAS/nvJitLink Compatibility:")
         print(f"   ✓ Versions match correctly ({packages['cublas']['major_minor']}.x)")
+    
+    if 'torch_branch_incompatible' in locals() and not torch_branch_incompatible:
+        print(f"\n✅ PyTorch Branch Compatibility:")
+        print(f"   ✓ {packages['torch_cuda_branch']} compatible with Runtime {runtime_info['runtime_version']}")
 
 # Check if cuopt_incompatible variable exists (only set when CuOPT is installed)
 if 'cuopt_incompatible' in locals() and cuopt_incompatible:
