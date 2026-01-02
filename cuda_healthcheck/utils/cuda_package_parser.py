@@ -432,6 +432,218 @@ def check_pytorch_cuda_branch_compatibility(
     return result
 
 
+def validate_torch_branch_compatibility(
+    runtime_version: float, torch_cuda_branch: str
+) -> Dict[str, Any]:
+    """
+    Validate PyTorch CUDA branch compatibility with Databricks runtime.
+
+    Critical Check: Databricks runtimes have specific CUDA versions that may not
+    support newer PyTorch CUDA branches. Runtime 14.3 (CUDA 12.0, Driver 535) does
+    NOT support PyTorch cu124 (built for CUDA 12.4).
+
+    Compatibility Matrix:
+    ┌────────────┬────────┬─────────┬────────┬────────┬────────┐
+    │ Runtime    │ Driver │ CUDA    │ cu120  │ cu121  │ cu124  │
+    ├────────────┼────────┼─────────┼────────┼────────┼────────┤
+    │ 14.3       │ 535    │ 12.0    │ ✅     │ ✅     │ ❌     │
+    │ 15.1       │ 550    │ 12.4    │ ✅     │ ✅     │ ✅     │
+    │ 15.2+      │ 550    │ 12.4    │ ✅     │ ✅     │ ✅     │
+    └────────────┴────────┴─────────┴────────┴────────┴────────┘
+
+    Why cu124 fails on Runtime 14.3:
+    - PyTorch cu124 is built against CUDA 12.4 APIs
+    - Runtime 14.3 provides CUDA 12.0 runtime
+    - Missing CUDA 12.4 symbols cause runtime failures
+    - Driver 535 lacks features required by CUDA 12.4
+
+    Args:
+        runtime_version: Databricks runtime version (e.g., 14.3, 15.1, 15.2)
+        torch_cuda_branch: PyTorch CUDA branch (e.g., "cu120", "cu121", "cu124")
+
+    Returns:
+        Compatibility validation result:
+        {
+            'is_compatible': bool,        # True if compatible
+            'severity': str,              # 'BLOCKER' if incompatible, None otherwise
+            'runtime_version': float,     # Input runtime version
+            'torch_cuda_branch': str,     # Input CUDA branch
+            'runtime_cuda': str,          # Runtime's CUDA version
+            'runtime_driver': int,        # Runtime's driver version
+            'issue': str or None,         # Detailed incompatibility message
+            'fix_options': List[str]      # List of fix options
+        }
+
+    Examples:
+        >>> # Compatible: Runtime 15.2 + cu124
+        >>> result = validate_torch_branch_compatibility(15.2, "cu124")
+        >>> result['is_compatible']
+        True
+        >>> result['severity']
+        None
+
+        >>> # INCOMPATIBLE: Runtime 14.3 + cu124 (BLOCKER)
+        >>> result = validate_torch_branch_compatibility(14.3, "cu124")
+        >>> result['is_compatible']
+        False
+        >>> result['severity']
+        'BLOCKER'
+        >>> print(result['issue'])
+        ❌ CRITICAL: PyTorch cu124 is INCOMPATIBLE with Databricks Runtime 14.3!
+        <BLANKLINE>
+        Runtime 14.3 provides:
+          • CUDA Runtime: 12.0
+          • Driver: 535 (immutable)
+        <BLANKLINE>
+        PyTorch cu124 requires:
+          • CUDA Runtime: 12.4
+          • Driver: ≥ 550
+        ...
+        >>> result['fix_options']
+        ['Option 1: Downgrade PyTorch to cu120 or cu121',
+         'Option 2: Upgrade to Databricks Runtime 15.2+ (provides CUDA 12.4, Driver 550)']
+
+        >>> # Compatible: Runtime 14.3 + cu120
+        >>> result = validate_torch_branch_compatibility(14.3, "cu120")
+        >>> result['is_compatible']
+        True
+
+        >>> # Compatible: Runtime 15.1 + cu121
+        >>> result = validate_torch_branch_compatibility(15.1, "cu121")
+        >>> result['is_compatible']
+        True
+    """
+    # Compatibility matrix
+    # Key: runtime_version, Value: {'cuda': str, 'driver': int, 'supported_branches': list}
+    COMPATIBILITY_MATRIX = {
+        14.3: {
+            "cuda": "12.0",
+            "driver": 535,
+            "supported_branches": ["cu120", "cu121"],
+            "blocked_branches": ["cu124"],
+        },
+        15.1: {
+            "cuda": "12.4",
+            "driver": 550,
+            "supported_branches": ["cu120", "cu121", "cu124"],
+            "blocked_branches": [],
+        },
+        15.2: {
+            "cuda": "12.4",
+            "driver": 550,
+            "supported_branches": ["cu120", "cu121", "cu124"],
+            "blocked_branches": [],
+        },
+        16.0: {
+            "cuda": "12.4",
+            "driver": 550,
+            "supported_branches": ["cu120", "cu121", "cu124"],
+            "blocked_branches": [],
+        },
+        16.4: {
+            "cuda": "12.6",
+            "driver": 560,
+            "supported_branches": ["cu120", "cu121", "cu124"],
+            "blocked_branches": [],
+        },
+    }
+
+    result = {
+        "is_compatible": False,
+        "severity": None,
+        "runtime_version": runtime_version,
+        "torch_cuda_branch": torch_cuda_branch,
+        "runtime_cuda": None,
+        "runtime_driver": None,
+        "issue": None,
+        "fix_options": [],
+    }
+
+    # Get runtime info
+    if runtime_version not in COMPATIBILITY_MATRIX:
+        result["issue"] = (
+            f"⚠️  Unknown Databricks runtime version: {runtime_version}\n"
+            f"Cannot validate PyTorch cu branch compatibility.\n"
+            f"Known runtimes: {', '.join(str(v) for v in sorted(COMPATIBILITY_MATRIX.keys()))}"
+        )
+        result["severity"] = "WARNING"
+        return result
+
+    runtime_info = COMPATIBILITY_MATRIX[runtime_version]
+    result["runtime_cuda"] = runtime_info["cuda"]
+    result["runtime_driver"] = runtime_info["driver"]
+
+    # Normalize CUDA branch (handle both "cu124" and "cu1240")
+    branch_normalized = torch_cuda_branch[:5] if len(torch_cuda_branch) > 5 else torch_cuda_branch
+
+    # Check compatibility
+    if branch_normalized in runtime_info["supported_branches"]:
+        result["is_compatible"] = True
+        return result
+
+    # Incompatible - generate detailed error
+    result["is_compatible"] = False
+    result["severity"] = "BLOCKER"
+
+    # Build error message
+    result["issue"] = (
+        f"❌ CRITICAL: PyTorch {torch_cuda_branch} is INCOMPATIBLE "
+        f"with Databricks Runtime {runtime_version}!\n\n"
+        f"Runtime {runtime_version} provides:\n"
+        f"  • CUDA Runtime: {runtime_info['cuda']}\n"
+        f"  • Driver: {runtime_info['driver']} (immutable)\n\n"
+    )
+
+    # Extract CUDA version from branch
+    branch_match = re.match(r"cu(\d{1,2})(\d)", branch_normalized)
+    if branch_match:
+        branch_major = branch_match.group(1)
+        branch_minor = branch_match.group(2)
+        branch_cuda = f"{branch_major}.{branch_minor}"
+
+        result["issue"] += (
+            f"PyTorch {torch_cuda_branch} requires:\n"
+            f"  • CUDA Runtime: {branch_cuda}\n"
+            f"  • Driver: ≥ 550 (for CUDA 12.4+)\n\n"
+        )
+
+    result["issue"] += (
+        f"⚠️  This mismatch causes:\n"
+        f"  • Missing CUDA API symbols\n"
+        f"  • Runtime initialization failures\n"
+        f"  • Segmentation faults during tensor operations\n"
+        f'  • "CUDA driver version is insufficient" errors\n\n'
+        f"📋 Why this is IMMUTABLE:\n"
+        f"  Runtime {runtime_version} has a locked driver version ({runtime_info['driver']}).\n"
+        f"  You CANNOT upgrade the driver or CUDA runtime on this runtime."
+    )
+
+    # Generate fix options
+    if runtime_info["supported_branches"]:
+        supported_list = ", ".join(runtime_info["supported_branches"])
+        result["fix_options"].append(
+            f"Option 1: Downgrade PyTorch to {supported_list}\n"
+            f"  pip install torch --index-url https://download.pytorch.org/whl/cu121"
+        )
+
+    # Find minimum compatible runtime
+    compatible_runtimes = [
+        v
+        for v, info in COMPATIBILITY_MATRIX.items()
+        if branch_normalized in info["supported_branches"]
+    ]
+    if compatible_runtimes:
+        min_runtime = min(compatible_runtimes)
+        result["fix_options"].append(
+            f"Option 2: Upgrade to Databricks Runtime {min_runtime}+ "
+            f"(provides CUDA {COMPATIBILITY_MATRIX[min_runtime]['cuda']}, "
+            f"Driver {COMPATIBILITY_MATRIX[min_runtime]['driver']})\n"
+            f"  This requires creating a new cluster with Runtime {min_runtime}+"
+        )
+
+    return result
+
+
 def check_cublas_nvjitlink_version_match(
     cublas_version: str, nvjitlink_version: str
 ) -> Dict[str, Any]:

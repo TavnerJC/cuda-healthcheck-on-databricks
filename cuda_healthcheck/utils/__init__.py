@@ -11,6 +11,7 @@ from cuda_healthcheck.utils.cuda_package_parser import (
     get_cuda_packages_from_pip,
     parse_cuda_packages,
     validate_cuda_library_versions,
+    validate_torch_branch_compatibility,
 )
 from cuda_healthcheck.utils.logging_config import get_logger
 from cuda_healthcheck.utils.retry import retry_on_failure
@@ -24,6 +25,7 @@ __all__ = [
     "check_pytorch_cuda_branch_compatibility",
     "check_cublas_nvjitlink_version_match",
     "detect_mixed_cuda_versions",
+    "validate_torch_branch_compatibility",
     "validate_cuda_library_versions",
     # Existing utilities
     "get_logger",

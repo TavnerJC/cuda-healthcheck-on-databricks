@@ -14,6 +14,7 @@ from cuda_healthcheck.utils.cuda_package_parser import (
     format_cuda_packages_report,
     parse_cuda_packages,
     validate_cuda_library_versions,
+    validate_torch_branch_compatibility,
 )
 
 
@@ -712,3 +713,147 @@ cuml-cu12==24.10.0
         assert result["is_mixed"] is True
         assert result["cu11_count"] == 2
         assert result["cu12_count"] == 2
+
+
+class TestValidateTorchBranchCompatibility:
+    """Test PyTorch CUDA branch compatibility with Databricks runtimes."""
+
+    def test_runtime_14_3_with_cu120_compatible(self):
+        """Test Runtime 14.3 with cu120 (compatible)."""
+        result = validate_torch_branch_compatibility(14.3, "cu120")
+
+        assert result["is_compatible"] is True
+        assert result["severity"] is None
+        assert result["runtime_cuda"] == "12.0"
+        assert result["runtime_driver"] == 535
+
+    def test_runtime_14_3_with_cu121_compatible(self):
+        """Test Runtime 14.3 with cu121 (compatible)."""
+        result = validate_torch_branch_compatibility(14.3, "cu121")
+
+        assert result["is_compatible"] is True
+        assert result["severity"] is None
+
+    def test_runtime_14_3_with_cu124_blocker(self):
+        """Test Runtime 14.3 with cu124 (BLOCKER - critical case)."""
+        result = validate_torch_branch_compatibility(14.3, "cu124")
+
+        assert result["is_compatible"] is False
+        assert result["severity"] == "BLOCKER"
+        assert result["runtime_cuda"] == "12.0"
+        assert result["runtime_driver"] == 535
+        assert "CRITICAL" in result["issue"]
+        assert "INCOMPATIBLE" in result["issue"]
+        assert len(result["fix_options"]) == 2
+        assert "Option 1: Downgrade PyTorch" in result["fix_options"][0]
+        assert "cu120, cu121" in result["fix_options"][0]
+        assert "Option 2: Upgrade to Databricks Runtime 15.1+" in result["fix_options"][1]
+
+    def test_runtime_15_1_with_cu124_compatible(self):
+        """Test Runtime 15.1 with cu124 (compatible)."""
+        result = validate_torch_branch_compatibility(15.1, "cu124")
+
+        assert result["is_compatible"] is True
+        assert result["severity"] is None
+        assert result["runtime_cuda"] == "12.4"
+        assert result["runtime_driver"] == 550
+
+    def test_runtime_15_2_with_cu124_compatible(self):
+        """Test Runtime 15.2 with cu124 (compatible)."""
+        result = validate_torch_branch_compatibility(15.2, "cu124")
+
+        assert result["is_compatible"] is True
+        assert result["severity"] is None
+
+    def test_runtime_15_1_with_cu120_compatible(self):
+        """Test Runtime 15.1 with cu120 (backward compatible)."""
+        result = validate_torch_branch_compatibility(15.1, "cu120")
+
+        assert result["is_compatible"] is True
+
+    def test_runtime_16_4_with_cu124_compatible(self):
+        """Test Runtime 16.4 with cu124 (compatible)."""
+        result = validate_torch_branch_compatibility(16.4, "cu124")
+
+        assert result["is_compatible"] is True
+        assert result["runtime_cuda"] == "12.6"
+        assert result["runtime_driver"] == 560
+
+    def test_unknown_runtime_warning(self):
+        """Test unknown runtime version returns warning."""
+        result = validate_torch_branch_compatibility(99.9, "cu124")
+
+        assert result["is_compatible"] is False
+        assert result["severity"] == "WARNING"
+        assert "Unknown Databricks runtime" in result["issue"]
+
+    def test_branch_normalization(self):
+        """Test CUDA branch normalization (cu1240 → cu124)."""
+        result = validate_torch_branch_compatibility(15.1, "cu1240")
+
+        assert result["is_compatible"] is True
+
+    def test_fix_options_content_runtime_14_3(self):
+        """Test fix options provide correct guidance for Runtime 14.3."""
+        result = validate_torch_branch_compatibility(14.3, "cu124")
+
+        # Check Option 1 (downgrade PyTorch)
+        assert "cu120, cu121" in result["fix_options"][0]
+        assert "download.pytorch.org/whl/cu121" in result["fix_options"][0]
+
+        # Check Option 2 (upgrade runtime)
+        assert "Runtime 15.1+" in result["fix_options"][1]
+        assert "Driver 550" in result["fix_options"][1]
+
+
+class TestTorchBranchRealWorldScenarios:
+    """Test real-world PyTorch CUDA branch scenarios."""
+
+    def test_databricks_14_3_cu124_issue(self):
+        """Test the critical Databricks 14.3 + cu124 incompatibility."""
+        result = validate_torch_branch_compatibility(14.3, "cu124")
+
+        assert result["is_compatible"] is False
+        assert result["severity"] == "BLOCKER"
+        assert "immutable" in result["issue"].lower()
+        assert "cannot upgrade" in result["issue"].lower()
+        assert "Missing CUDA API symbols" in result["issue"]
+        assert "Segmentation faults" in result["issue"]
+
+    def test_user_upgrades_runtime_to_15_2(self):
+        """Test user upgrades from 14.3 to 15.2 to use cu124."""
+        # Before: Runtime 14.3 + cu124 (BLOCKER)
+        result_before = validate_torch_branch_compatibility(14.3, "cu124")
+        assert result_before["is_compatible"] is False
+
+        # After: Runtime 15.2 + cu124 (OK)
+        result_after = validate_torch_branch_compatibility(15.2, "cu124")
+        assert result_after["is_compatible"] is True
+
+    def test_user_downgrades_torch_to_cu121(self):
+        """Test user downgrades PyTorch from cu124 to cu121 on Runtime 14.3."""
+        # Before: Runtime 14.3 + cu124 (BLOCKER)
+        result_before = validate_torch_branch_compatibility(14.3, "cu124")
+        assert result_before["is_compatible"] is False
+
+        # After: Runtime 14.3 + cu121 (OK)
+        result_after = validate_torch_branch_compatibility(14.3, "cu121")
+        assert result_after["is_compatible"] is True
+
+    def test_all_runtimes_with_cu120(self):
+        """Test cu120 is compatible with all runtimes."""
+        runtimes = [14.3, 15.1, 15.2, 16.0, 16.4]
+
+        for runtime in runtimes:
+            result = validate_torch_branch_compatibility(runtime, "cu120")
+            assert result["is_compatible"] is True, f"cu120 should work on Runtime {runtime}"
+
+    def test_cu124_requires_15_1_minimum(self):
+        """Test cu124 requires minimum Runtime 15.1."""
+        # Runtime 14.3 + cu124 (BLOCKER)
+        result_14_3 = validate_torch_branch_compatibility(14.3, "cu124")
+        assert result_14_3["is_compatible"] is False
+
+        # Runtime 15.1 + cu124 (OK)
+        result_15_1 = validate_torch_branch_compatibility(15.1, "cu124")
+        assert result_15_1["is_compatible"] is True
