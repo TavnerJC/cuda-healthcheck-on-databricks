@@ -72,6 +72,7 @@
 # MAGIC - **40 comprehensive unit tests** covering all CUDA mismatch scenarios
 # MAGIC - **100% test coverage** for critical detection paths
 # MAGIC - **Continuous integration** - All tests run automatically on every update
+# MAGIC - **9 compatibility matrix tests** - Validates all Runtime + PyTorch combinations
 # MAGIC - **Validated scenarios:**
 # MAGIC   - nvJitLink version mismatches (5 tests)
 # MAGIC   - Missing CUDA libraries (3 tests)
@@ -80,6 +81,34 @@
 # MAGIC   - Valid configurations (3 tests)
 # MAGIC   - Feature-based requirements (5 tests)
 # MAGIC   - Edge cases and error handling (6 tests)
+# MAGIC   - Compatibility matrix (9 runtime + CUDA variant combinations)
+# MAGIC
+# MAGIC ### Automated Compatibility Matrix Testing (NEW!)
+# MAGIC - **9 parallel tests** - All Runtime × PyTorch CUDA variant combinations
+# MAGIC - **Matrix coverage:**
+# MAGIC   ```
+# MAGIC   Runtime  │ cu120 │ cu121 │ cu124
+# MAGIC   ─────────┼───────┼───────┼───────
+# MAGIC   14.3     │   ✅  │   ✅  │   ❌
+# MAGIC   15.1     │   ✅  │   ✅  │   ✅
+# MAGIC   15.2     │   ✅  │   ✅  │   ✅
+# MAGIC   ```
+# MAGIC - **Automated validation** - Ensures known incompatibility (14.3 + cu124) is detected
+# MAGIC - **PR comments** - Results posted directly on pull requests
+# MAGIC - **Regression prevention** - Catches breaking changes immediately
+# MAGIC
+# MAGIC ## Alternative: Integrated Healthcheck Script
+# MAGIC
+# MAGIC For automated validation or CI/CD integration, use the standalone script:
+# MAGIC ```python
+# MAGIC %run ./databricks_cuda_healthcheck_enhanced.py
+# MAGIC ```
+# MAGIC
+# MAGIC **Features:**
+# MAGIC - ✅ All 4 detection layers in one script
+# MAGIC - ✅ Exit codes: 0 (success) or 1 (blockers)
+# MAGIC - ✅ Beautiful formatted report
+# MAGIC - ✅ Aggregated blocker list with fix commands
 # MAGIC
 # MAGIC ## Requirements:
 # MAGIC
@@ -1259,8 +1288,9 @@ print("\n" + "=" * 80)
 # MAGIC
 # MAGIC ## 🧪 Tool Reliability
 # MAGIC
-# MAGIC This CUDA Healthcheck Tool has been validated with **40 comprehensive unit tests**:
+# MAGIC This CUDA Healthcheck Tool has been validated with **49 comprehensive tests**:
 # MAGIC
+# MAGIC ### Unit Tests (40 tests)
 # MAGIC - ✅ **5 tests** for nvJitLink version mismatch detection
 # MAGIC - ✅ **3 tests** for missing CUDA libraries detection
 # MAGIC - ✅ **6 tests** for mixed CUDA 11/12 package detection
@@ -1270,18 +1300,80 @@ print("\n" + "=" * 80)
 # MAGIC - ✅ **5 tests** for integrated validation scenarios
 # MAGIC - ✅ **6 tests** for edge cases and error handling
 # MAGIC
+# MAGIC ### Compatibility Matrix Tests (9 tests)
+# MAGIC - ✅ **3 tests** for Runtime 14.3 (cu120 ✅, cu121 ✅, cu124 ❌)
+# MAGIC - ✅ **3 tests** for Runtime 15.1 (all compatible)
+# MAGIC - ✅ **3 tests** for Runtime 15.2 (all compatible)
+# MAGIC
 # MAGIC **Test execution time:** < 1 second  
-# MAGIC **Success rate:** 100% (40/40 passing)  
+# MAGIC **Success rate:** 100% (49/49 passing)  
 # MAGIC **CI/CD:** Automated testing on every update
 # MAGIC
-# MAGIC View the complete test suite: [test_cuda_version_mismatch_detection.py](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/tests/test_cuda_version_mismatch_detection.py)
+# MAGIC View the test suites:
+# MAGIC - [test_cuda_version_mismatch_detection.py](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/tests/test_cuda_version_mismatch_detection.py) - Unit tests
+# MAGIC - [compatibility-matrix.yml](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/.github/workflows/compatibility-matrix.yml) - Matrix testing workflow
+# MAGIC
+# MAGIC ---
+# MAGIC
+# MAGIC ## 🚀 Quick Start Alternatives
+# MAGIC
+# MAGIC ### Option 1: This Interactive Notebook (Recommended for exploration)
+# MAGIC You're already here! This notebook provides detailed step-by-step validation with explanations.
+# MAGIC
+# MAGIC ### Option 2: Integrated Healthcheck Script (Recommended for automation)
+# MAGIC For automated validation or CI/CD integration:
+# MAGIC ```python
+# MAGIC %run ./databricks_cuda_healthcheck_enhanced.py
+# MAGIC ```
+# MAGIC
+# MAGIC **Features:**
+# MAGIC - ✅ All 4 detection layers in one command
+# MAGIC - ✅ Exit code 0 (success) or 1 (blockers found)
+# MAGIC - ✅ Beautiful formatted report with box drawing
+# MAGIC - ✅ Aggregated blocker list with specific fix commands
+# MAGIC - ✅ Perfect for automation and CI/CD pipelines
+# MAGIC
+# MAGIC **Example output:**
+# MAGIC ```
+# MAGIC ═══════════════════════════════════════════════════════════
+# MAGIC DATABRICKS CUDA HEALTHCHECK REPORT
+# MAGIC ═══════════════════════════════════════════════════════════
+# MAGIC ✅ Layer 1: Environment Detection
+# MAGIC    - Runtime: 15.2
+# MAGIC    - Driver: 550-550
+# MAGIC    - CUDA: 12.4
+# MAGIC
+# MAGIC ✅ Layer 2: CUDA Library Inventory
+# MAGIC    - torch: 2.4.1 (cu124)
+# MAGIC    - cublas: 12.4.5.8
+# MAGIC    - nvjitlink: 12.4.127 ✅
+# MAGIC
+# MAGIC ✅ Layer 3: Dependency Conflicts
+# MAGIC    - No mixed cu11/cu12 detected
+# MAGIC    - cuBLAS/nvJitLink versions match
+# MAGIC
+# MAGIC ✅ Layer 4: DataDesigner Compatibility
+# MAGIC    - torch.cuda.is_available(): True
+# MAGIC    - GPU device: NVIDIA A100-SXM4-40GB
+# MAGIC
+# MAGIC ═══════════════════════════════════════════════════════════
+# MAGIC ✅ RESULT: Ready to install DataDesigner
+# MAGIC ═══════════════════════════════════════════════════════════
+# MAGIC ```
 # MAGIC
 # MAGIC ---
 # MAGIC
 # MAGIC ## 📚 Additional Resources
 # MAGIC
 # MAGIC - **GitHub Repository:** https://github.com/TavnerJC/cuda-healthcheck-on-databricks
-# MAGIC - **Documentation:** Complete guides in `/docs` directory
+# MAGIC - **Documentation:**
+# MAGIC   - [Compatibility Matrix Testing](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/COMPATIBILITY_MATRIX_TESTING.md)
+# MAGIC   - [Databricks Runtime Detection](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DATABRICKS_RUNTIME_DETECTION.md)
+# MAGIC   - [Driver Version Mapping](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/DRIVER_VERSION_MAPPING.md)
+# MAGIC   - [CUDA Package Parser](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/CUDA_PACKAGE_PARSER.md)
+# MAGIC   - [NeMo DataDesigner Detection](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/docs/NEMO_DATADESIGNER_DETECTION.md)
+# MAGIC - **Scripts:**
+# MAGIC   - [Integrated Healthcheck Script](https://github.com/TavnerJC/cuda-healthcheck-on-databricks/blob/main/notebooks/databricks_cuda_healthcheck_enhanced.py)
 # MAGIC - **Issue Reporting:** Use GitHub Issues for bug reports or feature requests
 # MAGIC - **Version:** 0.5.0 (latest)
 # MAGIC
