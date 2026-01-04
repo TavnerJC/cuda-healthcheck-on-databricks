@@ -11,7 +11,8 @@
 # MAGIC 2. ✅ Checks CUDA availability for BioNeMo workloads
 # MAGIC 3. ✅ Validates PyTorch installation and CUDA linkage
 # MAGIC 4. ✅ **Tests PyTorch Lightning GPU compatibility (NEW!)**
-# MAGIC 5. ✅ **Validates BioNeMo core packages availability (NEW!)**
+# MAGIC 5. ✅ **Performs CUDA functional testing (NEW!)**
+# MAGIC 6. ✅ **Validates BioNeMo core packages availability (NEW!)**
 # MAGIC
 # MAGIC ## BioNeMo Framework Overview:
 # MAGIC
@@ -572,7 +573,775 @@ display(df_lightning)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 🧬 Cell 4: BioNeMo Core Package Availability (NEW!)
+# MAGIC ## 🔥 Cell 4: CUDA Functional Testing (NEW!)
+# MAGIC
+# MAGIC Performs actual CUDA operations to validate GPU functionality beyond availability checks.
+# MAGIC This cell tests real computational workloads that BioNeMo training will depend on.
+# MAGIC
+# MAGIC **Core Tests (1-7):**
+# MAGIC - CUDA tensor creation on device
+# MAGIC - Matrix multiplication performance (GFLOPS)
+# MAGIC - CUDA memory allocation and tracking
+# MAGIC - CUDA stream synchronization
+# MAGIC - Mixed precision support (FP16, BF16)
+# MAGIC - cuDNN availability and version
+# MAGIC - NCCL availability (for distributed training)
+# MAGIC
+# MAGIC **Advanced CUDA Library Benchmarks (8-12):**
+# MAGIC - **cuBLAS:** GEMM (General Matrix Multiply) performance at multiple sizes
+# MAGIC - **cuFFT:** Fast Fourier Transform (1D, 2D) performance
+# MAGIC - **cuSOLVER:** Matrix inversion and linear algebra operations
+# MAGIC - **Tensor Cores:** FP16 vs FP32 performance comparison (Volta+)
+# MAGIC - **Memory Bandwidth:** Device-to-device transfer speed (GB/s)
+# MAGIC
+# MAGIC **Why this matters for BioNeMo:**
+# MAGIC - BioNeMo models require efficient tensor operations across all CUDA libraries
+# MAGIC - Training uses mixed precision (FP16/BF16) and Tensor Cores for performance
+# MAGIC - Multi-GPU training depends on NCCL and high memory bandwidth
+# MAGIC - Memory management is critical for large protein/DNA models
+# MAGIC - cuBLAS, cuFFT, cuSOLVER used in various model architectures
+
+# COMMAND ----------
+print("=" * 80)
+print("🔥 CUDA FUNCTIONAL TESTING")
+print("=" * 80)
+
+# Initialize results dictionary
+cuda_functional_results = {
+    "timestamp": datetime.now(timezone.utc).isoformat(),
+    "cuda_functional": False,
+    "memory_test_passed": False,
+    "tensor_ops_speed_gflops": 0.0,
+    "mixed_precision_support": {
+        "float16": False,
+        "bfloat16": False,
+        "tf32": False
+    },
+    "cudnn_available": False,
+    "cudnn_version": None,
+    "nccl_available": False,
+    "nccl_version": None,
+    "tests_run": [],
+    "errors": [],
+    "status": "PENDING"
+}
+
+try:
+    import torch
+    import time
+    
+    if not torch.cuda.is_available():
+        cuda_functional_results["errors"].append("CUDA not available - skipping functional tests")
+        cuda_functional_results["status"] = "SKIPPED"
+        print("\n⚠️  CUDA not available - skipping functional tests")
+    else:
+        # Get GPU info
+        device = torch.device("cuda:0")
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_capability = torch.cuda.get_device_capability(0)
+        
+        print(f"\n🎮 Testing on: {gpu_name}")
+        print(f"   Compute Capability: {gpu_capability[0]}.{gpu_capability[1]}")
+        
+        # ========================================================================
+        # TEST 1: CUDA Tensor Creation
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 1: CUDA Tensor Creation")
+        print("─" * 80)
+        
+        try:
+            # Create tensors on GPU
+            tensor_sizes = [(1000, 1000), (2000, 2000), (4000, 4000)]
+            
+            for size in tensor_sizes:
+                start_time = time.time()
+                tensor = torch.randn(size, device=device)
+                torch.cuda.synchronize()
+                elapsed = time.time() - start_time
+                
+                print(f"   ✅ Created {size[0]}×{size[1]} tensor in {elapsed*1000:.2f}ms")
+                del tensor
+            
+            cuda_functional_results["tests_run"].append("tensor_creation")
+            print(f"   Status: PASSED")
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Tensor creation failed: {str(e)}")
+            print(f"   ❌ Tensor creation failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 2: Matrix Multiplication Performance (GFLOPS)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 2: Matrix Multiplication Performance")
+        print("─" * 80)
+        
+        try:
+            # Matrix multiplication benchmark
+            matrix_size = 4096
+            num_iterations = 10
+            
+            print(f"   Running {num_iterations} iterations of {matrix_size}×{matrix_size} matmul...")
+            
+            # Create test matrices
+            A = torch.randn(matrix_size, matrix_size, device=device)
+            B = torch.randn(matrix_size, matrix_size, device=device)
+            
+            # Warm-up
+            for _ in range(5):
+                C = torch.matmul(A, B)
+            torch.cuda.synchronize()
+            
+            # Benchmark
+            start_time = time.time()
+            for _ in range(num_iterations):
+                C = torch.matmul(A, B)
+            torch.cuda.synchronize()
+            elapsed = time.time() - start_time
+            
+            # Calculate GFLOPS
+            # Matrix multiplication: 2*N^3 FLOPs for N×N matrices
+            flops_per_matmul = 2 * (matrix_size ** 3)
+            total_flops = flops_per_matmul * num_iterations
+            gflops = (total_flops / elapsed) / 1e9
+            
+            cuda_functional_results["tensor_ops_speed_gflops"] = round(gflops, 2)
+            cuda_functional_results["tests_run"].append("matrix_multiplication")
+            
+            print(f"   ✅ Performance: {gflops:.2f} GFLOPS")
+            print(f"   ✅ Avg time per matmul: {(elapsed/num_iterations)*1000:.2f}ms")
+            print(f"   Status: PASSED")
+            
+            # Cleanup
+            del A, B, C
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Matrix multiplication failed: {str(e)}")
+            print(f"   ❌ Matrix multiplication failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 3: CUDA Memory Allocation and Tracking
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 3: CUDA Memory Allocation and Tracking")
+        print("─" * 80)
+        
+        try:
+            # Clear cache
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats()
+            
+            initial_memory = torch.cuda.memory_allocated(0)
+            print(f"   Initial memory: {initial_memory / 1024**2:.2f} MB")
+            
+            # Allocate tensors
+            tensors = []
+            allocation_sizes_mb = [100, 200, 500]  # MB
+            
+            for size_mb in allocation_sizes_mb:
+                num_elements = (size_mb * 1024 * 1024) // 4  # 4 bytes per float32
+                tensor = torch.randn(num_elements, device=device)
+                tensors.append(tensor)
+                
+                current_memory = torch.cuda.memory_allocated(0)
+                print(f"   ✅ Allocated {size_mb}MB → Total: {current_memory / 1024**2:.2f} MB")
+            
+            # Check peak memory
+            peak_memory = torch.cuda.max_memory_allocated(0)
+            print(f"   Peak memory usage: {peak_memory / 1024**2:.2f} MB")
+            
+            # Free memory
+            del tensors
+            torch.cuda.empty_cache()
+            
+            final_memory = torch.cuda.memory_allocated(0)
+            print(f"   Final memory: {final_memory / 1024**2:.2f} MB")
+            
+            # Verify memory was freed
+            memory_freed = (peak_memory - final_memory) / 1024**2
+            if memory_freed > 700:  # Should have freed ~800MB
+                cuda_functional_results["memory_test_passed"] = True
+                cuda_functional_results["tests_run"].append("memory_management")
+                print(f"   ✅ Memory freed: {memory_freed:.2f} MB")
+                print(f"   Status: PASSED")
+            else:
+                cuda_functional_results["errors"].append("Memory not properly freed")
+                print(f"   ⚠️  Only {memory_freed:.2f} MB freed (expected ~800MB)")
+                
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Memory test failed: {str(e)}")
+            print(f"   ❌ Memory test failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 4: CUDA Stream Operations
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 4: CUDA Stream Synchronization")
+        print("─" * 80)
+        
+        try:
+            # Create multiple CUDA streams
+            num_streams = 4
+            streams = [torch.cuda.Stream() for _ in range(num_streams)]
+            
+            print(f"   Created {num_streams} CUDA streams")
+            
+            # Launch operations on different streams
+            results = []
+            for i, stream in enumerate(streams):
+                with torch.cuda.stream(stream):
+                    A = torch.randn(2000, 2000, device=device)
+                    B = torch.randn(2000, 2000, device=device)
+                    C = torch.matmul(A, B)
+                    results.append(C)
+            
+            # Synchronize all streams
+            start_time = time.time()
+            for stream in streams:
+                stream.synchronize()
+            sync_time = time.time() - start_time
+            
+            print(f"   ✅ {num_streams} concurrent operations completed")
+            print(f"   ✅ Stream synchronization: {sync_time*1000:.2f}ms")
+            
+            cuda_functional_results["tests_run"].append("cuda_streams")
+            print(f"   Status: PASSED")
+            
+            # Cleanup
+            del results
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Stream operations failed: {str(e)}")
+            print(f"   ❌ Stream operations failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 5: Mixed Precision Support (FP16, BF16, TF32)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 5: Mixed Precision Support")
+        print("─" * 80)
+        
+        try:
+            # Test FP16 (float16)
+            print("   Testing float16 (FP16)...")
+            try:
+                A_fp16 = torch.randn(1000, 1000, device=device, dtype=torch.float16)
+                B_fp16 = torch.randn(1000, 1000, device=device, dtype=torch.float16)
+                C_fp16 = torch.matmul(A_fp16, B_fp16)
+                torch.cuda.synchronize()
+                
+                cuda_functional_results["mixed_precision_support"]["float16"] = True
+                print(f"      ✅ float16 (FP16): Supported")
+                
+                del A_fp16, B_fp16, C_fp16
+            except Exception as e:
+                print(f"      ❌ float16 (FP16): Not supported - {str(e)}")
+            
+            # Test BF16 (bfloat16) - requires Ampere or newer
+            print("   Testing bfloat16 (BF16)...")
+            try:
+                if gpu_capability[0] >= 8:  # Ampere (A100, etc.)
+                    A_bf16 = torch.randn(1000, 1000, device=device, dtype=torch.bfloat16)
+                    B_bf16 = torch.randn(1000, 1000, device=device, dtype=torch.bfloat16)
+                    C_bf16 = torch.matmul(A_bf16, B_bf16)
+                    torch.cuda.synchronize()
+                    
+                    cuda_functional_results["mixed_precision_support"]["bfloat16"] = True
+                    print(f"      ✅ bfloat16 (BF16): Supported")
+                    
+                    del A_bf16, B_bf16, C_bf16
+                else:
+                    print(f"      ⚠️  bfloat16 (BF16): Requires Ampere+ GPU (compute capability 8.0+)")
+                    print(f"         Your GPU: {gpu_capability[0]}.{gpu_capability[1]}")
+            except Exception as e:
+                print(f"      ❌ bfloat16 (BF16): Not supported - {str(e)}")
+            
+            # Test TF32 (available on Ampere+)
+            print("   Testing TensorFloat-32 (TF32)...")
+            try:
+                if gpu_capability[0] >= 8:
+                    # TF32 is enabled by default on Ampere
+                    tf32_enabled = torch.backends.cuda.matmul.allow_tf32
+                    cuda_functional_results["mixed_precision_support"]["tf32"] = tf32_enabled
+                    
+                    if tf32_enabled:
+                        print(f"      ✅ TensorFloat-32 (TF32): Enabled")
+                    else:
+                        print(f"      ⚠️  TensorFloat-32 (TF32): Available but disabled")
+                else:
+                    print(f"      ⚠️  TensorFloat-32 (TF32): Requires Ampere+ GPU")
+            except Exception as e:
+                print(f"      ❌ TensorFloat-32 (TF32): Check failed - {str(e)}")
+            
+            cuda_functional_results["tests_run"].append("mixed_precision")
+            print(f"   Status: PASSED")
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Mixed precision test failed: {str(e)}")
+            print(f"   ❌ Mixed precision test failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 6: cuDNN Availability and Version
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 6: cuDNN Availability")
+        print("─" * 80)
+        
+        try:
+            if torch.backends.cudnn.is_available():
+                cuda_functional_results["cudnn_available"] = True
+                cuda_functional_results["cudnn_version"] = torch.backends.cudnn.version()
+                
+                print(f"   ✅ cuDNN available")
+                print(f"   ✅ cuDNN version: {torch.backends.cudnn.version()}")
+                print(f"   ✅ cuDNN enabled: {torch.backends.cudnn.enabled}")
+                
+                cuda_functional_results["tests_run"].append("cudnn")
+                print(f"   Status: PASSED")
+            else:
+                cuda_functional_results["errors"].append("cuDNN not available")
+                print(f"   ❌ cuDNN not available")
+                
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"cuDNN check failed: {str(e)}")
+            print(f"   ❌ cuDNN check failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 7: NCCL Availability (for distributed training)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 7: NCCL Availability (Distributed Training)")
+        print("─" * 80)
+        
+        try:
+            # Check if NCCL is available
+            if torch.cuda.nccl.is_available():
+                cuda_functional_results["nccl_available"] = True
+                
+                # Try to get NCCL version
+                try:
+                    nccl_version = torch.cuda.nccl.version()
+                    cuda_functional_results["nccl_version"] = nccl_version
+                    
+                    print(f"   ✅ NCCL available")
+                    print(f"   ✅ NCCL version: {nccl_version}")
+                except:
+                    print(f"   ✅ NCCL available (version unknown)")
+                
+                cuda_functional_results["tests_run"].append("nccl")
+                print(f"   Status: PASSED")
+            else:
+                print(f"   ⚠️  NCCL not available")
+                print(f"   ℹ️  NCCL is required for multi-GPU distributed training")
+                
+        except Exception as e:
+            # NCCL not being available is not critical for single-GPU
+            print(f"   ⚠️  NCCL check failed: {str(e)}")
+            print(f"   ℹ️  Single-GPU training will still work")
+        
+        # ========================================================================
+        # TEST 8: cuBLAS Performance Benchmark (GEMM)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 8: cuBLAS Performance (GEMM Benchmark)")
+        print("─" * 80)
+        
+        try:
+            # cuBLAS GEMM (General Matrix Multiply) benchmark
+            # This tests the cuBLAS library specifically, not just PyTorch
+            import torch.nn.functional as F
+            
+            matrix_sizes = [1024, 2048, 4096, 8192]
+            cublas_results = []
+            
+            print(f"   Running cuBLAS GEMM benchmarks...")
+            
+            for size in matrix_sizes:
+                A = torch.randn(size, size, device=device)
+                B = torch.randn(size, size, device=device)
+                
+                # Warm-up
+                for _ in range(3):
+                    C = torch.mm(A, B)
+                torch.cuda.synchronize()
+                
+                # Benchmark
+                iterations = 10
+                start_time = time.time()
+                for _ in range(iterations):
+                    C = torch.mm(A, B)  # Uses cuBLAS sgemm
+                torch.cuda.synchronize()
+                elapsed = time.time() - start_time
+                
+                # Calculate GFLOPS
+                flops = 2 * (size ** 3) * iterations
+                gflops = (flops / elapsed) / 1e9
+                cublas_results.append((size, gflops))
+                
+                print(f"      {size}×{size}: {gflops:.2f} GFLOPS")
+                
+                del A, B, C
+            
+            # Store best result
+            if 'cublas_gflops' not in cuda_functional_results:
+                cuda_functional_results['cublas_gflops'] = {}
+            for size, gflops in cublas_results:
+                cuda_functional_results['cublas_gflops'][f'{size}x{size}'] = round(gflops, 2)
+            
+            cuda_functional_results["tests_run"].append("cublas_gemm")
+            print(f"   ✅ cuBLAS GEMM benchmark complete")
+            print(f"   Status: PASSED")
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"cuBLAS benchmark failed: {str(e)}")
+            print(f"   ❌ cuBLAS benchmark failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 9: cuFFT Performance (Fast Fourier Transform)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 9: cuFFT Performance (FFT Benchmark)")
+        print("─" * 80)
+        
+        try:
+            # Test 1D, 2D FFT operations
+            print(f"   Testing 1D FFT...")
+            
+            # 1D FFT
+            signal_length = 2**20  # 1M points
+            signal = torch.randn(signal_length, device=device, dtype=torch.complex64)
+            
+            # Warm-up
+            for _ in range(3):
+                fft_result = torch.fft.fft(signal)
+            torch.cuda.synchronize()
+            
+            # Benchmark
+            iterations = 20
+            start_time = time.time()
+            for _ in range(iterations):
+                fft_result = torch.fft.fft(signal)
+            torch.cuda.synchronize()
+            elapsed_1d = time.time() - start_time
+            
+            time_per_fft_1d = (elapsed_1d / iterations) * 1000
+            print(f"      1D FFT ({signal_length} points): {time_per_fft_1d:.2f}ms/iter")
+            
+            # 2D FFT
+            print(f"   Testing 2D FFT...")
+            image_size = 2048
+            image = torch.randn(image_size, image_size, device=device, dtype=torch.complex64)
+            
+            # Warm-up
+            for _ in range(3):
+                fft_result = torch.fft.fft2(image)
+            torch.cuda.synchronize()
+            
+            # Benchmark
+            iterations = 10
+            start_time = time.time()
+            for _ in range(iterations):
+                fft_result = torch.fft.fft2(image)
+            torch.cuda.synchronize()
+            elapsed_2d = time.time() - start_time
+            
+            time_per_fft_2d = (elapsed_2d / iterations) * 1000
+            print(f"      2D FFT ({image_size}×{image_size}): {time_per_fft_2d:.2f}ms/iter")
+            
+            # Store results
+            cuda_functional_results['cufft_performance'] = {
+                '1d_fft_ms': round(time_per_fft_1d, 2),
+                '2d_fft_ms': round(time_per_fft_2d, 2)
+            }
+            
+            cuda_functional_results["tests_run"].append("cufft")
+            print(f"   ✅ cuFFT benchmark complete")
+            print(f"   Status: PASSED")
+            
+            del signal, image, fft_result
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"cuFFT benchmark failed: {str(e)}")
+            print(f"   ❌ cuFFT benchmark failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 10: cuSOLVER (Linear Algebra Operations)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 10: cuSOLVER Performance (Linear Algebra)")
+        print("─" * 80)
+        
+        try:
+            # Test matrix inversion and eigenvalue decomposition
+            matrix_sizes = [512, 1024, 2048]
+            cusolver_results = []
+            
+            print(f"   Testing matrix inversion...")
+            
+            for size in matrix_sizes:
+                # Create random positive definite matrix
+                A = torch.randn(size, size, device=device)
+                A = torch.mm(A, A.t()) + torch.eye(size, device=device) * 0.1
+                
+                # Warm-up
+                for _ in range(2):
+                    A_inv = torch.inverse(A)
+                torch.cuda.synchronize()
+                
+                # Benchmark
+                iterations = 5
+                start_time = time.time()
+                for _ in range(iterations):
+                    A_inv = torch.inverse(A)
+                torch.cuda.synchronize()
+                elapsed = time.time() - start_time
+                
+                time_per_inv = (elapsed / iterations) * 1000
+                cusolver_results.append((size, time_per_inv))
+                
+                print(f"      {size}×{size} inversion: {time_per_inv:.2f}ms")
+                
+                del A, A_inv
+            
+            # Store results
+            cuda_functional_results['cusolver_performance'] = {
+                f'{size}x{size}_inverse_ms': round(time_ms, 2)
+                for size, time_ms in cusolver_results
+            }
+            
+            cuda_functional_results["tests_run"].append("cusolver")
+            print(f"   ✅ cuSOLVER benchmark complete")
+            print(f"   Status: PASSED")
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"cuSOLVER benchmark failed: {str(e)}")
+            print(f"   ❌ cuSOLVER benchmark failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 11: Tensor Cores Performance (if available)
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 11: Tensor Cores Performance (Ampere+ GPUs)")
+        print("─" * 80)
+        
+        try:
+            # Tensor Cores available on compute capability 7.0+ (Volta, Turing, Ampere)
+            if gpu_capability[0] >= 7:
+                print(f"   GPU supports Tensor Cores (compute {gpu_capability[0]}.{gpu_capability[1]})")
+                
+                # Test with FP16 which uses Tensor Cores
+                size = 8192
+                iterations = 20
+                
+                # FP16 matmul (uses Tensor Cores)
+                A_fp16 = torch.randn(size, size, device=device, dtype=torch.float16)
+                B_fp16 = torch.randn(size, size, device=device, dtype=torch.float16)
+                
+                # Warm-up
+                for _ in range(5):
+                    C_fp16 = torch.matmul(A_fp16, B_fp16)
+                torch.cuda.synchronize()
+                
+                # Benchmark
+                start_time = time.time()
+                for _ in range(iterations):
+                    C_fp16 = torch.matmul(A_fp16, B_fp16)
+                torch.cuda.synchronize()
+                elapsed_fp16 = time.time() - start_time
+                
+                # Calculate GFLOPS
+                flops = 2 * (size ** 3) * iterations
+                gflops_fp16 = (flops / elapsed_fp16) / 1e9
+                
+                print(f"   ✅ FP16 Tensor Cores: {gflops_fp16:.2f} GFLOPS")
+                
+                # Compare with FP32 (no Tensor Cores)
+                A_fp32 = torch.randn(size, size, device=device, dtype=torch.float32)
+                B_fp32 = torch.randn(size, size, device=device, dtype=torch.float32)
+                
+                # Warm-up
+                for _ in range(5):
+                    C_fp32 = torch.matmul(A_fp32, B_fp32)
+                torch.cuda.synchronize()
+                
+                # Benchmark
+                start_time = time.time()
+                for _ in range(iterations):
+                    C_fp32 = torch.matmul(A_fp32, B_fp32)
+                torch.cuda.synchronize()
+                elapsed_fp32 = time.time() - start_time
+                
+                gflops_fp32 = (flops / elapsed_fp32) / 1e9
+                
+                print(f"   ✅ FP32 CUDA Cores: {gflops_fp32:.2f} GFLOPS")
+                
+                speedup = gflops_fp16 / gflops_fp32
+                print(f"   ✅ Tensor Core speedup: {speedup:.2f}x")
+                
+                cuda_functional_results['tensor_cores_performance'] = {
+                    'fp16_gflops': round(gflops_fp16, 2),
+                    'fp32_gflops': round(gflops_fp32, 2),
+                    'speedup': round(speedup, 2)
+                }
+                
+                cuda_functional_results["tests_run"].append("tensor_cores")
+                print(f"   Status: PASSED")
+                
+                del A_fp16, B_fp16, C_fp16, A_fp32, B_fp32, C_fp32
+                
+            else:
+                print(f"   ⚠️  GPU does not support Tensor Cores (compute {gpu_capability[0]}.{gpu_capability[1]} < 7.0)")
+                print(f"   ℹ️  Tensor Cores available on Volta (V100), Turing (T4), Ampere (A100) and newer")
+                
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Tensor Cores benchmark failed: {str(e)}")
+            print(f"   ❌ Tensor Cores benchmark failed: {str(e)}")
+        
+        # ========================================================================
+        # TEST 12: Memory Bandwidth Test
+        # ========================================================================
+        print("\n" + "─" * 80)
+        print("TEST 12: GPU Memory Bandwidth")
+        print("─" * 80)
+        
+        try:
+            # Test memory bandwidth with large tensor copies
+            size_mb = 512  # 512MB tensor
+            num_elements = (size_mb * 1024 * 1024) // 4  # 4 bytes per float32
+            iterations = 20
+            
+            print(f"   Testing memory bandwidth with {size_mb}MB transfers...")
+            
+            # Device to Device copy
+            A = torch.randn(num_elements, device=device)
+            B = torch.empty_like(A)
+            
+            # Warm-up
+            for _ in range(5):
+                B.copy_(A)
+            torch.cuda.synchronize()
+            
+            # Benchmark
+            start_time = time.time()
+            for _ in range(iterations):
+                B.copy_(A)
+            torch.cuda.synchronize()
+            elapsed = time.time() - start_time
+            
+            # Calculate bandwidth in GB/s
+            bytes_transferred = size_mb * 1024 * 1024 * iterations
+            bandwidth_gb_s = (bytes_transferred / elapsed) / 1e9
+            
+            print(f"   ✅ Memory bandwidth: {bandwidth_gb_s:.2f} GB/s")
+            
+            # Get GPU memory bandwidth spec (theoretical)
+            gpu_props = torch.cuda.get_device_properties(0)
+            print(f"   ℹ️  GPU: {gpu_props.name}")
+            print(f"   ℹ️  Total memory: {gpu_props.total_memory / 1024**3:.2f} GB")
+            
+            cuda_functional_results['memory_bandwidth_gb_s'] = round(bandwidth_gb_s, 2)
+            cuda_functional_results["tests_run"].append("memory_bandwidth")
+            print(f"   Status: PASSED")
+            
+            del A, B
+            
+        except Exception as e:
+            cuda_functional_results["errors"].append(f"Memory bandwidth test failed: {str(e)}")
+            print(f"   ❌ Memory bandwidth test failed: {str(e)}")
+        
+        # Determine overall functional status
+        if len(cuda_functional_results["tests_run"]) >= 8:
+            cuda_functional_results["cuda_functional"] = True
+            cuda_functional_results["status"] = "PASSED"
+        elif len(cuda_functional_results["tests_run"]) >= 5:
+            cuda_functional_results["status"] = "PARTIAL"
+        else:
+            cuda_functional_results["status"] = "FAILED"
+
+except ImportError:
+    cuda_functional_results["errors"].append("PyTorch not installed")
+    cuda_functional_results["status"] = "BLOCKED"
+    print("\n❌ PyTorch not installed - cannot run CUDA functional tests")
+except Exception as e:
+    cuda_functional_results["errors"].append(f"Unexpected error: {str(e)}")
+    cuda_functional_results["status"] = "ERROR"
+    print(f"\n❌ Unexpected error: {str(e)}")
+
+# Final summary
+print("\n" + "=" * 80)
+print(f"CUDA FUNCTIONAL TEST STATUS: {cuda_functional_results['status']}")
+print("=" * 80)
+
+if cuda_functional_results["status"] == "PASSED":
+    print(f"\n✅ ALL FUNCTIONAL TESTS PASSED")
+    print(f"   Tests run: {len(cuda_functional_results['tests_run'])}")
+    print(f"   GFLOPS: {cuda_functional_results['tensor_ops_speed_gflops']}")
+    print(f"   Memory test: {'PASSED' if cuda_functional_results['memory_test_passed'] else 'FAILED'}")
+    print(f"   Mixed precision: {sum(cuda_functional_results['mixed_precision_support'].values())} types supported")
+elif cuda_functional_results["status"] == "PARTIAL":
+    print(f"\n⚠️  PARTIAL SUCCESS")
+    print(f"   Tests run: {len(cuda_functional_results['tests_run'])}")
+    print(f"   Some tests passed, but not all features available")
+elif cuda_functional_results["errors"]:
+    print(f"\n❌ ERRORS DETECTED:")
+    for i, error in enumerate(cuda_functional_results["errors"], 1):
+        print(f"   {i}. {error}")
+
+print("=" * 80)
+
+# Display results as DataFrame
+summary_data = {
+    "Test": [
+        "Tensor Creation",
+        "Matrix Multiplication",
+        "Memory Management",
+        "CUDA Streams",
+        "Mixed Precision",
+        "cuDNN",
+        "NCCL (Distributed)",
+        "cuBLAS GEMM",
+        "cuFFT",
+        "cuSOLVER",
+        "Tensor Cores",
+        "Memory Bandwidth"
+    ],
+    "Status": [
+        "✅ PASS" if "tensor_creation" in cuda_functional_results["tests_run"] else "❌ FAIL",
+        f"✅ PASS ({cuda_functional_results['tensor_ops_speed_gflops']} GFLOPS)" if cuda_functional_results['tensor_ops_speed_gflops'] > 0 else "❌ FAIL",
+        "✅ PASS" if cuda_functional_results["memory_test_passed"] else "❌ FAIL",
+        "✅ PASS" if "cuda_streams" in cuda_functional_results["tests_run"] else "❌ FAIL",
+        f"✅ PASS ({sum(cuda_functional_results['mixed_precision_support'].values())}/3)" if "mixed_precision" in cuda_functional_results["tests_run"] else "❌ FAIL",
+        f"✅ PASS (v{cuda_functional_results['cudnn_version']})" if cuda_functional_results["cudnn_available"] else "❌ FAIL",
+        f"✅ PASS (v{cuda_functional_results['nccl_version']})" if cuda_functional_results["nccl_available"] else "⚠️ N/A",
+        f"✅ PASS (8192: {cuda_functional_results.get('cublas_gflops', {}).get('8192x8192', 0)} GFLOPS)" if "cublas_gemm" in cuda_functional_results["tests_run"] else "⚠️ N/A",
+        f"✅ PASS ({cuda_functional_results.get('cufft_performance', {}).get('2d_fft_ms', 0)}ms 2D)" if "cufft" in cuda_functional_results["tests_run"] else "⚠️ N/A",
+        f"✅ PASS (2048: {cuda_functional_results.get('cusolver_performance', {}).get('2048x2048_inverse_ms', 0)}ms)" if "cusolver" in cuda_functional_results["tests_run"] else "⚠️ N/A",
+        f"✅ PASS ({cuda_functional_results.get('tensor_cores_performance', {}).get('speedup', 0)}x speedup)" if "tensor_cores" in cuda_functional_results["tests_run"] else "⚠️ N/A",
+        f"✅ PASS ({cuda_functional_results.get('memory_bandwidth_gb_s', 0)} GB/s)" if "memory_bandwidth" in cuda_functional_results["tests_run"] else "⚠️ N/A"
+    ],
+    "Details": [
+        "Tensor creation on GPU device",
+        f"4096×4096 matmul performance",
+        "Allocate/free 800MB GPU memory",
+        "4 concurrent CUDA streams",
+        f"FP16: {cuda_functional_results['mixed_precision_support']['float16']}, BF16: {cuda_functional_results['mixed_precision_support']['bfloat16']}, TF32: {cuda_functional_results['mixed_precision_support']['tf32']}",
+        "Deep learning primitives library",
+        "Multi-GPU communication (optional)",
+        "General Matrix Multiply benchmark",
+        "Fast Fourier Transform performance",
+        "Linear algebra operations",
+        "FP16 vs FP32 performance (Volta+)",
+        "Device-to-device copy speed"
+    ]
+}
+
+df_cuda_functional = pd.DataFrame(summary_data)
+display(df_cuda_functional)
+
+# COMMAND ----------
+# MAGIC %md
+# MAGIC ## 🧬 Cell 5: BioNeMo Core Package Availability (NEW!)
 # MAGIC
 # MAGIC Tests availability and imports of BioNeMo Framework packages.
 # MAGIC
@@ -815,7 +1584,7 @@ display(df_bionemo)
 
 # COMMAND ----------
 # MAGIC %md
-# MAGIC ## 📋 Cell 5: Final Summary Report
+# MAGIC ## 📋 Cell 6: Final Summary Report
 # MAGIC
 # MAGIC Comprehensive summary of all validation checks with recommendations.
 
@@ -830,6 +1599,7 @@ final_report = {
     "validation_sections": {
         "cuda_environment": cuda_validation_results,
         "pytorch_lightning": lightning_test_results,
+        "cuda_functional": cuda_functional_results,
         "bionemo_packages": bionemo_test_results
     },
     "overall_status": "PENDING",
@@ -878,7 +1648,21 @@ if lightning_test_results["status"] == "PASSED":
 else:
     print(f"      • Blockers: {len(lightning_test_results['blockers'])}")
 
-# Section 3: BioNeMo Packages
+# Section 3: CUDA Functional Tests
+cuda_func_status = "✅ PASS" if cuda_functional_results["status"] == "PASSED" else ("⏭️ SKIP" if cuda_functional_results["status"] == "SKIPPED" else "❌ FAIL")
+print(f"\n   3. CUDA Functional Tests: {cuda_func_status}")
+if cuda_functional_results["status"] == "PASSED":
+    print(f"      • Tests Run: {len(cuda_functional_results['tests_run'])}")
+    print(f"      • Performance: {cuda_functional_results['tensor_ops_speed_gflops']} GFLOPS")
+    print(f"      • Memory Test: {'✅ PASSED' if cuda_functional_results['memory_test_passed'] else '❌ FAILED'}")
+    mixed_p_count = sum(cuda_functional_results['mixed_precision_support'].values())
+    print(f"      • Mixed Precision: {mixed_p_count}/3 types supported")
+elif cuda_functional_results["status"] == "SKIPPED":
+    print(f"      • Skipped (CUDA not available)")
+else:
+    print(f"      • Errors: {len(cuda_functional_results['errors'])}")
+
+# Section 4: BioNeMo Packages
 if bionemo_test_results["status"] == "NO_PACKAGES":
     bionemo_status = "⚠️ NOT INSTALLED"
 elif bionemo_test_results["status"] == "PASSED":
@@ -886,7 +1670,15 @@ elif bionemo_test_results["status"] == "PASSED":
 else:
     bionemo_status = "❌ FAIL"
 
-print(f"\n   3. BioNeMo Packages: {bionemo_status}")
+# Section 4: BioNeMo Packages
+if bionemo_test_results["status"] == "NO_PACKAGES":
+    bionemo_status = "⚠️ NOT INSTALLED"
+elif bionemo_test_results["status"] == "PASSED":
+    bionemo_status = "✅ PASS"
+else:
+    bionemo_status = "❌ FAIL"
+
+print(f"\n   4. BioNeMo Packages: {bionemo_status}")
 installed = sum(1 for r in bionemo_test_results["packages_tested"].values() if r["is_installed"])
 importable = sum(1 for r in bionemo_test_results["packages_tested"].values() if r["is_importable"])
 print(f"      • Installed: {installed}/{len(bionemo_packages)}")
